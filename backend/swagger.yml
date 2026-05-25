@@ -1,0 +1,341 @@
+openapi: 3.0.3
+info:
+  title: Marka API
+  version: 0.1.0
+  description: API салона МАРКА
+
+servers:
+  - url: http://localhost:3001
+    description: Локальная разработка
+
+tags:
+  - name: services
+    description: Категории услуг
+  - name: sub-services
+    description: Позиции прайса (подуслуги)
+  - name: specialists
+    description: Специалисты салона
+  - name: uploads
+    description: Загрузка файлов (MinIO)
+
+paths:
+  /services:
+    get:
+      operationId: getServices
+      summary: Получить все категории услуг
+      description: |
+        Массив категорий (`Service`). У каждой категории поле **`items`** — подуслуги
+        (`SubService`): у каждой позиции матрица цен **`prices`** по полу (female / male)
+        и по типу специалиста (мастер … арт-директор).
+      tags:
+        - services
+      responses:
+        "200":
+          description: Список категорий с подуслугами
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Service"
+
+  /sub-services/{id}:
+    put:
+      operationId: updateSubServiceById
+      summary: Обновить подуслугу по id
+      tags:
+        - sub-services
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Идентификатор подуслуги
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubService"
+      responses:
+        "200":
+          description: Обновлённая подуслуга
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubService"
+        "400":
+          description: Некорректное тело запроса
+        "404":
+          description: Подуслуга с таким id не найдена
+
+  /uploads/specialist-photo:
+    post:
+      operationId: uploadSpecialistPhoto
+      summary: Загрузить фото специалиста в MinIO
+      tags:
+        - uploads
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: URL загруженного файла
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadPhotoResponse"
+        "400":
+          description: Некорректный файл
+
+  /specialists:
+    get:
+      operationId: listSpecialists
+      summary: Список специалистов
+      tags:
+        - specialists
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Specialist"
+    post:
+      operationId: createSpecialist
+      summary: Создать специалиста
+      tags:
+        - specialists
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpecialistInput"
+      responses:
+        "201":
+          description: Создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Specialist"
+        "400":
+          description: Некорректное тело
+
+  /specialists/{id}:
+    get:
+      operationId: getSpecialist
+      summary: Специалист по id
+      tags:
+        - specialists
+      parameters:
+        - $ref: "#/components/parameters/SpecialistId"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Specialist"
+        "404":
+          description: Не найден
+    put:
+      operationId: updateSpecialist
+      summary: Обновить специалиста
+      tags:
+        - specialists
+      parameters:
+        - $ref: "#/components/parameters/SpecialistId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpecialistInput"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Specialist"
+        "404":
+          description: Не найден
+    delete:
+      operationId: deleteSpecialist
+      summary: Удалить специалиста
+      tags:
+        - specialists
+      parameters:
+        - $ref: "#/components/parameters/SpecialistId"
+      responses:
+        "204":
+          description: Удалён
+        "404":
+          description: Не найден
+
+components:
+  parameters:
+    SpecialistId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+
+  schemas:
+    DescriptionSection:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Заголовок блока (жирный на сайте)
+          example: Образование
+        description:
+          type: string
+          description: Текст под заголовком
+          example: Академия красоты «Эколь», 2019 год.
+
+    Specialist:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - photo_url
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: array
+          items:
+            $ref: "#/components/schemas/DescriptionSection"
+        photo_url:
+          type: string
+          example: https://example.com/photo.jpg
+
+    SpecialistInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        description:
+          type: array
+          items:
+            $ref: "#/components/schemas/DescriptionSection"
+        photo_url:
+          type: string
+          description: URL фото после POST /uploads/specialist-photo
+
+    UploadPhotoResponse:
+      type: object
+      required:
+        - url
+        - key
+      properties:
+        url:
+          type: string
+          example: http://localhost:9000/marka/specialists/uuid.jpg
+        key:
+          type: string
+          example: specialists/uuid.jpg
+
+    Service:
+      type: object
+      description: Категория услуг; подуслуги — только в `items`
+      required:
+        - id
+        - name
+        - description
+        - items
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: Парикмахерский зал
+        description:
+          type: string
+          example: Стрижки, уход, укладки
+        items:
+          type: array
+          description: Подуслуги (строки прайса) внутри категории
+          items:
+            $ref: "#/components/schemas/SubService"
+
+    TierPrices:
+      type: object
+      description: Цены по типу специалиста
+      required:
+        - master
+        - top_master
+        - stylist
+        - top_stylist
+        - art_director
+      properties:
+        master:
+          type: string
+          example: "2 000 ₽"
+        top_master:
+          type: string
+        stylist:
+          type: string
+        top_stylist:
+          type: string
+        art_director:
+          type: string
+
+    GenderedPrices:
+      type: object
+      description: Цены для женщин и мужчин
+      required:
+        - female
+        - male
+      properties:
+        female:
+          $ref: "#/components/schemas/TierPrices"
+        male:
+          $ref: "#/components/schemas/TierPrices"
+
+    SubService:
+      type: object
+      description: Строка прайса (подуслуга) с матрицей цен
+      required:
+        - id
+        - name
+        - description
+        - prices
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор; при `PUT /sub-services/{id}` должен совпадать с id в пути
+          example: 111
+        name:
+          type: string
+          example: Стрижка (пример)
+        description:
+          type: string
+          example: Модельная стрижка по длине и типу волос.
+        prices:
+          $ref: "#/components/schemas/GenderedPrices"
