@@ -6,6 +6,7 @@ import {
   updateSpecialist,
 } from "../api/specialists";
 import { SpecialistForm } from "../components/SpecialistForm";
+import { specialistClassLabel } from "../types/specialist-class";
 import type { DescriptionSection, Specialist, SpecialistInput } from "../types/specialist";
 
 function descPreview(sections: DescriptionSection[]) {
@@ -94,6 +95,7 @@ export function SpecialistsPage() {
                 <tr>
                   <th>Фото</th>
                   <th>Имя</th>
+                  <th>Категория</th>
                   <th>Описание</th>
                   <th />
                 </tr>
@@ -117,6 +119,7 @@ export function SpecialistsPage() {
                       <strong>{sp.name}</strong>
                       <div className="desc-preview">id: {sp.id}</div>
                     </td>
+                    <td>{specialistClassLabel(sp.class)}</td>
                     <td>
                       <span className="desc-preview">{descPreview(sp.description)}</span>
                     </td>

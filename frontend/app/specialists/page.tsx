@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SpecialistsGrid } from "@/components/specialists/SpecialistsGrid";
+import { SpecialistsList } from "@/components/specialists/SpecialistsList";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { fetchSpecialists } from "@/lib/api/specialists";
 
@@ -41,9 +41,7 @@ export default async function SpecialistsPage() {
             Скоро здесь появятся карточки мастеров.
           </p>
         ) : (
-          <div className="mt-10">
-            <SpecialistsGrid specialists={specialists} />
-          </div>
+          <SpecialistsList specialists={specialists} />
         )}
       </div>
       <SiteFooter />

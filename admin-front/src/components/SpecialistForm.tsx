@@ -1,6 +1,13 @@
 import { useRef, useState, type FormEvent } from "react";
 import { uploadSpecialistPhoto } from "../api/uploads";
 import {
+  DEFAULT_SPECIALIST_CLASS,
+  SPECIALIST_CLASS_KEYS,
+  SPECIALIST_CLASS_LABELS,
+  isSpecialistClass,
+  type SpecialistClass,
+} from "../types/specialist-class";
+import {
   emptySection,
   normalizeSections,
   type DescriptionSection,
@@ -29,6 +36,11 @@ function sectionsFromInitial(initial?: Specialist): DescriptionSection[] {
 export function SpecialistForm({ title, initial, onSubmit, onCancel }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(initial?.name ?? "");
+  const [classKey, setClassKey] = useState<SpecialistClass>(
+    initial?.class && isSpecialistClass(initial.class)
+      ? initial.class
+      : DEFAULT_SPECIALIST_CLASS,
+  );
   const [photoUrl, setPhotoUrl] = useState(initial?.photo_url ?? "");
   const [sections, setSections] = useState<DescriptionSection[]>(() =>
     sectionsFromInitial(initial),
@@ -88,6 +100,7 @@ export function SpecialistForm({ title, initial, onSubmit, onCancel }: Props) {
     try {
       await onSubmit({
         name: name.trim(),
+        class: classKey,
         photo_url: photoUrl.trim(),
         description: normalizeSections(sections),
       });
@@ -114,6 +127,24 @@ export function SpecialistForm({ title, initial, onSubmit, onCancel }: Props) {
           autoFocus
           disabled={busy}
         />
+      </div>
+      <div className="form-field">
+        <label htmlFor="sp-class">Категория</label>
+        <select
+          id="sp-class"
+          value={classKey}
+          disabled={busy}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (isSpecialistClass(v)) setClassKey(v);
+          }}
+        >
+          {SPECIALIST_CLASS_KEYS.map((key) => (
+            <option key={key} value={key}>
+              {SPECIALIST_CLASS_LABELS[key]}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="form-field">
         <span className="form-label">Фото</span>

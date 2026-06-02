@@ -3,15 +3,19 @@ export type DescriptionSection = {
   description: string;
 };
 
+import type { SpecialistClass } from "./specialist-class";
+
 export type Specialist = {
   id: number;
   name: string;
+  class: SpecialistClass;
   description: DescriptionSection[];
   photo_url: string;
 };
 
 export type SpecialistInput = {
   name: string;
+  class: SpecialistClass;
   description: DescriptionSection[];
   photo_url: string;
 };

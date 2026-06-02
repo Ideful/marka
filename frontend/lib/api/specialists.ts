@@ -1,4 +1,8 @@
 import { getApiBaseUrl } from "@/lib/api/config";
+import {
+  SPECIALIST_TIER_KEYS,
+  type SpecialistTierKey,
+} from "@/data/price-tiers";
 
 export type DescriptionSection = {
   title: string;
@@ -8,9 +12,18 @@ export type DescriptionSection = {
 export type Specialist = {
   id: number;
   name: string;
+  class: SpecialistTierKey;
   description: DescriptionSection[];
   photo_url: string;
 };
+
+function normalizeClass(raw: unknown): SpecialistTierKey {
+  const c = String(raw ?? "").trim();
+  if ((SPECIALIST_TIER_KEYS as readonly string[]).includes(c)) {
+    return c as SpecialistTierKey;
+  }
+  return "master";
+}
 
 function normalizeDescription(raw: unknown): DescriptionSection[] {
   if (Array.isArray(raw)) {
@@ -33,12 +46,11 @@ function normalizeDescription(raw: unknown): DescriptionSection[] {
   return [];
 }
 
-function normalizeSpecialist(raw: Specialist): Specialist {
+function normalizeSpecialist(raw: Specialist & { class?: unknown }): Specialist {
   return {
     ...raw,
-    description: normalizeDescription(
-      (raw as Specialist & { description?: unknown }).description,
-    ),
+    class: normalizeClass(raw.class),
+    description: normalizeDescription(raw.description),
   };
 }
 

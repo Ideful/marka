@@ -195,13 +195,37 @@ func (s *objectStorage) handleUploadSpecialistPhoto(w http.ResponseWriter, r *ht
 	}
 
 	objectKey := specialistPhotoPrefix + uuid.New().String() + extForMIME(detected)
-	body := io.MultiReader(bytes.NewReader(sniff), file)
-
-	_, err = s.client.PutObject(r.Context(), s.bucket, objectKey, body, -1, minio.PutObjectOptions{
-		ContentType: detected,
-	})
+	rest, err := io.ReadAll(io.LimitReader(file, maxSize-int64(len(sniff))+1))
 	if err != nil {
-		log.Printf("minio put: %v", err)
+		writeAPIError(w, http.StatusBadRequest, "cannot read file")
+		return
+	}
+	payload := append(append([]byte(nil), sniff...), rest...)
+
+	var putErr error
+	for attempt := range 5 {
+		if attempt > 0 {
+			time.Sleep(time.Duration(attempt) * 400 * time.Millisecond)
+		}
+		_, putErr = s.client.PutObject(
+			r.Context(),
+			s.bucket,
+			objectKey,
+			bytes.NewReader(payload),
+			int64(len(payload)),
+			minio.PutObjectOptions{ContentType: detected},
+		)
+		if putErr == nil {
+			break
+		}
+		if !strings.Contains(putErr.Error(), "reduce your request rate") &&
+			!strings.Contains(putErr.Error(), "unwritable") &&
+			!strings.Contains(putErr.Error(), "unreadable") {
+			break
+		}
+	}
+	if putErr != nil {
+		log.Printf("minio put: %v", putErr)
 		writeAPIError(w, http.StatusInternalServerError, "upload failed")
 		return
 	}

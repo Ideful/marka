@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { SpecialistSections } from "@/components/specialists/SpecialistSections";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { getApiBaseUrl, resolvePhotoUrl } from "@/lib/api/config";
+import { SPECIALIST_TIER_LABELS } from "@/data/price-tiers";
 import { fetchSpecialist } from "@/lib/api/specialists";
 
 type Props = {
@@ -44,7 +45,10 @@ export default async function SpecialistDetailPage({ params }: Props) {
         </Link>
 
         <header className="mt-8 text-center">
-          <h1 className="text-2xl font-bold uppercase tracking-wide text-ink md:text-3xl">
+          <p className="text-xs font-medium uppercase tracking-[0.2em] text-accent">
+            {SPECIALIST_TIER_LABELS[specialist.class]}
+          </p>
+          <h1 className="mt-2 text-2xl font-bold uppercase tracking-wide text-ink md:text-3xl">
             {specialist.name}
           </h1>
         </header>

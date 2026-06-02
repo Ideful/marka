@@ -214,6 +214,7 @@ components:
       required:
         - id
         - name
+        - class
         - description
         - photo_url
       properties:
@@ -222,6 +223,11 @@ components:
           format: int64
         name:
           type: string
+        class:
+          type: string
+          enum: [master, top_master, stylist, top_stylist, art_director]
+          description: Уровень специалиста (как в прайсе)
+          example: stylist
         description:
           type: array
           items:
@@ -234,9 +240,14 @@ components:
       type: object
       required:
         - name
+        - class
       properties:
         name:
           type: string
+        class:
+          type: string
+          enum: [master, top_master, stylist, top_stylist, art_director]
+          example: master
         description:
           type: array
           items:

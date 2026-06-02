@@ -39,6 +39,7 @@ type DescriptionSection struct {
 type Specialist struct {
 	ID          int                  `json:"id"`
 	Name        string               `json:"name"`
+	Class       string               `json:"class"`
 	Description []DescriptionSection `json:"description"`
 	PhotoURL    string               `json:"photo_url"`
 }

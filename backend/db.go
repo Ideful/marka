@@ -29,12 +29,20 @@ func migrate(ctx context.Context, pool *pgxpool.Pool) error {
 		CREATE TABLE IF NOT EXISTS specialists (
 			id SERIAL PRIMARY KEY,
 			name TEXT NOT NULL,
-			description JSONB NOT NULL DEFAULT '{}',
-			photo_url TEXT NOT NULL DEFAULT ''
+			description JSONB NOT NULL DEFAULT '[]',
+			photo_url TEXT NOT NULL DEFAULT '',
+			class TEXT NOT NULL DEFAULT 'master'
 		);
 	`)
 	if err != nil {
 		return fmt.Errorf("migrate specialists: %w", err)
+	}
+	_, err = pool.Exec(ctx, `
+		ALTER TABLE specialists
+		ADD COLUMN IF NOT EXISTS class TEXT NOT NULL DEFAULT 'master';
+	`)
+	if err != nil {
+		return fmt.Errorf("migrate specialists class: %w", err)
 	}
 	return nil
 }
