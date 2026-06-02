@@ -346,6 +346,13 @@
   resize: vertical;
 }
 
+.portfolio-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 10rem;
+}
+
 .sections-table-actions {
   width: 2.5rem;
   text-align: center;

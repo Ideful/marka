@@ -36,10 +36,16 @@ type DescriptionSection struct {
 	Description string `json:"description"`
 }
 
+type Portfolio struct {
+	PhotoURL    string `json:"photo_url"`
+	Description string `json:"description"`
+}
+
 type Specialist struct {
 	ID          int                  `json:"id"`
 	Name        string               `json:"name"`
 	Class       string               `json:"class"`
 	Description []DescriptionSection `json:"description"`
+	Portfolio   []Portfolio          `json:"portfolio"`
 	PhotoURL    string               `json:"photo_url"`
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { SpecialistPortfolio } from "@/components/specialists/SpecialistPortfolio";
 import { SpecialistSections } from "@/components/specialists/SpecialistSections";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { getApiBaseUrl, resolvePhotoUrl } from "@/lib/api/config";
@@ -71,6 +72,7 @@ export default async function SpecialistDetailPage({ params }: Props) {
         <div className="mt-10">
           <SpecialistSections sections={specialist.description} />
         </div>
+        <SpecialistPortfolio items={specialist.portfolio} />
       </article>
       <SiteFooter />
     </>

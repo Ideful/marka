@@ -17,7 +17,7 @@ type specialistStore struct {
 
 func (s *specialistStore) list(ctx context.Context) ([]Specialist, error) {
 	rows, err := s.pool.Query(ctx, `
-		SELECT id, name, class, description, photo_url
+		SELECT id, name, class, description, portfolio, photo_url
 		FROM specialists
 		ORDER BY id
 	`)
@@ -39,7 +39,7 @@ func (s *specialistStore) list(ctx context.Context) ([]Specialist, error) {
 
 func (s *specialistStore) get(ctx context.Context, id int) (Specialist, error) {
 	row := s.pool.QueryRow(ctx, `
-		SELECT id, name, class, description, photo_url
+		SELECT id, name, class, description, portfolio, photo_url
 		FROM specialists WHERE id = $1
 	`, id)
 	sp, err := scanSpecialist(row)
@@ -54,12 +54,16 @@ func (s *specialistStore) create(ctx context.Context, in Specialist) (Specialist
 	if err != nil {
 		return Specialist{}, err
 	}
+	portfolio, err := marshalPortfolio(in.Portfolio)
+	if err != nil {
+		return Specialist{}, err
+	}
 	var id int
 	err = s.pool.QueryRow(ctx, `
-		INSERT INTO specialists (name, class, description, photo_url)
-		VALUES ($1, $2, $3::jsonb, $4)
+		INSERT INTO specialists (name, class, description, portfolio, photo_url)
+		VALUES ($1, $2, $3::jsonb, $4::jsonb, $5)
 		RETURNING id
-	`, in.Name, in.Class, desc, in.PhotoURL).Scan(&id)
+	`, in.Name, in.Class, desc, portfolio, in.PhotoURL).Scan(&id)
 	if err != nil {
 		return Specialist{}, err
 	}
@@ -71,11 +75,15 @@ func (s *specialistStore) update(ctx context.Context, id int, in Specialist) (Sp
 	if err != nil {
 		return Specialist{}, err
 	}
+	portfolio, err := marshalPortfolio(in.Portfolio)
+	if err != nil {
+		return Specialist{}, err
+	}
 	tag, err := s.pool.Exec(ctx, `
 		UPDATE specialists
-		SET name = $1, class = $2, description = $3::jsonb, photo_url = $4
-		WHERE id = $5
-	`, in.Name, in.Class, desc, in.PhotoURL, id)
+		SET name = $1, class = $2, description = $3::jsonb, portfolio = $4::jsonb, photo_url = $5
+		WHERE id = $6
+	`, in.Name, in.Class, desc, portfolio, in.PhotoURL, id)
 	if err != nil {
 		return Specialist{}, err
 	}
@@ -103,10 +111,12 @@ type rowScanner interface {
 func scanSpecialist(row rowScanner) (Specialist, error) {
 	var sp Specialist
 	var descRaw []byte
-	if err := row.Scan(&sp.ID, &sp.Name, &sp.Class, &descRaw, &sp.PhotoURL); err != nil {
+	var portfolioRaw []byte
+	if err := row.Scan(&sp.ID, &sp.Name, &sp.Class, &descRaw, &portfolioRaw, &sp.PhotoURL); err != nil {
 		return Specialist{}, err
 	}
 	sp.Description = parseDescriptionJSON(descRaw)
+	sp.Portfolio = parsePortfolioJSON(portfolioRaw)
 	return sp, nil
 }
 

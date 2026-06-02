@@ -209,6 +209,18 @@ components:
           description: Текст под заголовком
           example: Академия красоты «Эколь», 2019 год.
 
+    Portfolio:
+      type: object
+      properties:
+        photo_url:
+          type: string
+          description: URL фото кейса/работы
+          example: https://example.com/portfolio-1.jpg
+        description:
+          type: string
+          description: Комментарий к фото (что сделано)
+          example: AirTouch + тонирование в холодный блонд.
+
     Specialist:
       type: object
       required:
@@ -216,6 +228,7 @@ components:
         - name
         - class
         - description
+        - portfolio
         - photo_url
       properties:
         id:
@@ -232,6 +245,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DescriptionSection"
+        portfolio:
+          type: array
+          items:
+            $ref: "#/components/schemas/Portfolio"
         photo_url:
           type: string
           example: https://example.com/photo.jpg
@@ -252,6 +269,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DescriptionSection"
+        portfolio:
+          type: array
+          items:
+            $ref: "#/components/schemas/Portfolio"
         photo_url:
           type: string
           description: URL фото после POST /uploads/specialist-photo

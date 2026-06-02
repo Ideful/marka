@@ -9,11 +9,17 @@ export type DescriptionSection = {
   description: string;
 };
 
+export type PortfolioItem = {
+  photo_url: string;
+  description: string;
+};
+
 export type Specialist = {
   id: number;
   name: string;
   class: SpecialistTierKey;
   description: DescriptionSection[];
+  portfolio: PortfolioItem[];
   photo_url: string;
 };
 
@@ -46,11 +52,25 @@ function normalizeDescription(raw: unknown): DescriptionSection[] {
   return [];
 }
 
+function normalizePortfolio(raw: unknown): PortfolioItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item) => {
+      const row = item as PortfolioItem;
+      return {
+        photo_url: String(row?.photo_url ?? "").trim(),
+        description: String(row?.description ?? "").trim(),
+      };
+    })
+    .filter((item) => item.photo_url || item.description);
+}
+
 function normalizeSpecialist(raw: Specialist & { class?: unknown }): Specialist {
   return {
     ...raw,
     class: normalizeClass(raw.class),
     description: normalizeDescription(raw.description),
+    portfolio: normalizePortfolio(raw.portfolio),
   };
 }
 

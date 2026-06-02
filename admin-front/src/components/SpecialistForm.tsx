@@ -9,8 +9,11 @@ import {
 } from "../types/specialist-class";
 import {
   emptySection,
+  emptyPortfolioItem,
+  normalizePortfolio,
   normalizeSections,
   type DescriptionSection,
+  type Portfolio,
   type Specialist,
   type SpecialistInput,
 } from "../types/specialist";
@@ -33,6 +36,17 @@ function sectionsFromInitial(initial?: Specialist): DescriptionSection[] {
   return [emptySection()];
 }
 
+function portfolioFromInitial(initial?: Specialist): Portfolio[] {
+  const list = initial?.portfolio ?? [];
+  if (list.length > 0) {
+    return list.map((item) => ({
+      photo_url: item.photo_url ?? "",
+      description: item.description ?? "",
+    }));
+  }
+  return [emptyPortfolioItem()];
+}
+
 export function SpecialistForm({ title, initial, onSubmit, onCancel }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(initial?.name ?? "");
@@ -45,6 +59,7 @@ export function SpecialistForm({ title, initial, onSubmit, onCancel }: Props) {
   const [sections, setSections] = useState<DescriptionSection[]>(() =>
     sectionsFromInitial(initial),
   );
+  const [portfolio, setPortfolio] = useState<Portfolio[]>(() => portfolioFromInitial(initial));
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +79,45 @@ export function SpecialistForm({ title, initial, onSubmit, onCancel }: Props) {
       if (prev.length <= 1) return [emptySection()];
       return prev.filter((_, i) => i !== index);
     });
+  }
+
+  function updatePortfolio(index: number, patch: Partial<Portfolio>) {
+    setPortfolio((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, ...patch } : row)),
+    );
+  }
+
+  function addPortfolio() {
+    setPortfolio((prev) => [...prev, emptyPortfolioItem()]);
+  }
+
+  function removePortfolio(index: number) {
+    setPortfolio((prev) => {
+      if (prev.length <= 1) return [emptyPortfolioItem()];
+      return prev.filter((_, i) => i !== index);
+    });
+  }
+
+  async function handlePortfolioFileChange(index: number, file: File | undefined) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Выберите файл изображения");
+      return;
+    }
+    if (file.size > 6 * 1024 * 1024) {
+      setError("Файл больше 6 МБ");
+      return;
+    }
+    setUploading(true);
+    setError(null);
+    try {
+      const { url } = await uploadSpecialistPhoto(file);
+      updatePortfolio(index, { photo_url: url });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Не удалось загрузить фото");
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleFileChange(file: File | undefined) {
@@ -103,6 +157,7 @@ export function SpecialistForm({ title, initial, onSubmit, onCancel }: Props) {
         class: classKey,
         photo_url: photoUrl.trim(),
         description: normalizeSections(sections),
+        portfolio: normalizePortfolio(portfolio),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка сохранения");
@@ -178,6 +233,91 @@ export function SpecialistForm({ title, initial, onSubmit, onCancel }: Props) {
               </button>
             ) : null}
           </div>
+        </div>
+      </div>
+
+      <div className="form-field">
+        <div className="sections-editor-head">
+          <span className="form-label">Портфолио</span>
+          <button type="button" className="btn btn-sm" disabled={busy} onClick={addPortfolio}>
+            + Добавить фото
+          </button>
+        </div>
+        <p className="sections-editor-hint">
+          Добавьте фото работы и краткое описание результата. Порядок сохраняется.
+        </p>
+        <div className="sections-table-wrap">
+          <table className="sections-table">
+            <thead>
+              <tr>
+                <th>Фото</th>
+                <th>Описание</th>
+                <th aria-label="Действия" />
+              </tr>
+            </thead>
+            <tbody>
+              {portfolio.map((item, index) => (
+                <tr key={index}>
+                  <td>
+                    <div className="portfolio-cell">
+                      {item.photo_url ? (
+                        <img src={item.photo_url} alt="" className="thumb" loading="lazy" />
+                      ) : (
+                        <div className="thumb-placeholder">нет</div>
+                      )}
+                      <div className="photo-upload-actions">
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          className="sr-only"
+                          id={`sp-portfolio-file-${index}`}
+                          disabled={busy}
+                          onChange={(e) =>
+                            void handlePortfolioFileChange(index, e.target.files?.[0])
+                          }
+                        />
+                        <label
+                          htmlFor={`sp-portfolio-file-${index}`}
+                          className={`btn btn-sm ${busy ? "disabled" : ""}`}
+                        >
+                          {uploading ? "Загрузка…" : "Загрузить"}
+                        </label>
+                      </div>
+                      <input
+                        type="url"
+                        value={item.photo_url}
+                        placeholder="Или вставьте URL"
+                        disabled={busy}
+                        onChange={(e) =>
+                          updatePortfolio(index, { photo_url: e.target.value })
+                        }
+                      />
+                    </div>
+                  </td>
+                  <td>
+                    <textarea
+                      value={item.description}
+                      placeholder="Что выполнено на фото"
+                      rows={3}
+                      disabled={busy}
+                      onChange={(e) => updatePortfolio(index, { description: e.target.value })}
+                    />
+                  </td>
+                  <td className="sections-table-actions">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-danger"
+                      disabled={busy}
+                      onClick={() => removePortfolio(index)}
+                      aria-label="Удалить фото портфолио"
+                    >
+                      ×
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
