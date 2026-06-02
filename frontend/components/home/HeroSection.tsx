@@ -18,20 +18,15 @@ export function HeroSection() {
         }}
       />
 
-      {/* Видеофон: положите файлы в /public и раскомментируйте блок ниже */}
-      {/*
       <video
         className="absolute inset-0 h-full w-full object-cover opacity-50"
         autoPlay
         muted
         loop
         playsInline
-        poster="/hero-poster.webp"
       >
-        <source src="/hero-bg.webm" type="video/webm" />
-        <source src="/hero-bg.mp4" type="video/mp4" />
+        <source src="/video.MP4" type="video/mp4" />
       </video>
-      */}
 
       <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center gap-8 px-6 py-28 text-center md:gap-10 md:py-32">
         <p

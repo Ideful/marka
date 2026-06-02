@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ContactsPanel } from "@/components/contacts/ContactsPanel";
 import { SpecialistsList } from "@/components/specialists/SpecialistsList";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { fetchSpecialists } from "@/lib/api/specialists";
@@ -44,6 +45,7 @@ export default async function SpecialistsPage() {
           <SpecialistsList specialists={specialists} />
         )}
       </div>
+      <ContactsPanel />
       <SiteFooter />
     </>
   );

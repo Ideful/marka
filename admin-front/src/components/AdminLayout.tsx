@@ -16,10 +16,11 @@ const NAV: NavItem[] = [
 type Props = {
   section: AdminSection;
   onSectionChange: (id: AdminSection) => void;
+  onLogout?: () => void;
   children: ReactNode;
 };
 
-export function AdminLayout({ section, onSectionChange, children }: Props) {
+export function AdminLayout({ section, onSectionChange, onLogout, children }: Props) {
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
@@ -42,6 +43,13 @@ export function AdminLayout({ section, onSectionChange, children }: Props) {
             ),
           )}
         </nav>
+        {onLogout ? (
+          <div className="admin-sidebar-footer">
+            <button type="button" className="btn" onClick={onLogout}>
+              Выйти
+            </button>
+          </div>
+        ) : null}
       </aside>
       <main className="admin-main">{children}</main>
     </div>
