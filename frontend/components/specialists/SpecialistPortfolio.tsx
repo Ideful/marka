@@ -14,7 +14,7 @@ export function SpecialistPortfolio({ items }: Props) {
       <h2 className="text-sm font-bold uppercase tracking-wide text-ink md:text-base">
         Портфолио
       </h2>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
         {items.map((item, idx) => {
           const src = resolvePhotoUrl(item.photo_url, apiBase);
           return (
