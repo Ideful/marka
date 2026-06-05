@@ -52,5 +52,8 @@ func migrate(ctx context.Context, pool *pgxpool.Pool) error {
 	if err != nil {
 		return fmt.Errorf("migrate specialists portfolio: %w", err)
 	}
+	if err := migrateServicesCatalog(ctx, pool); err != nil {
+		return err
+	}
 	return nil
 }

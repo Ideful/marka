@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import { AdminLayout, type AdminSection } from "./components/AdminLayout";
 import { SpecialistsPage } from "./pages/SpecialistsPage";
+import { SubServicesPage } from "./pages/SubServicesPage";
 
 const ADMIN_USERNAME = "r721rQWD";
 const ADMIN_PASSWORD = "ygb87!@E$8";
@@ -75,6 +76,7 @@ export function App() {
   return (
     <AdminLayout section={section} onSectionChange={setSection} onLogout={handleLogout}>
       {section === "specialists" ? <SpecialistsPage /> : null}
+      {section === "sub-services" ? <SubServicesPage /> : null}
     </AdminLayout>
   );
 }

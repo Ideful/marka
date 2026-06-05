@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -17,8 +16,6 @@ type healthResponse struct {
 	Service string `json:"service"`
 	Path    string `json:"path"`
 }
-
-var servicesCatalog []Service
 
 func main() {
 	port := os.Getenv("PORT")
@@ -37,12 +34,7 @@ func main() {
 		log.Fatalf("migrate: %v", err)
 	}
 
-	if err := loadServicesFromJSON("services.json"); err != nil {
-		log.Fatalf("services.json: %v", err)
-	}
-
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /services", handleListServices)
 	mux.HandleFunc("GET /", handleHealth)
 
 	storage, err := newObjectStorage(ctx)
@@ -51,28 +43,20 @@ func main() {
 	}
 	storage.registerRoutes(mux)
 
-
 	specialists := &specialistStore{pool: pool}
 	registerSpecialistRoutes(mux, specialists)
+
+	catalog := &catalogStore{pool: pool}
+	registerCatalogRoutes(mux, catalog)
+
+	subServices := &subServiceStore{pool: pool}
+	registerSubServiceRoutes(mux, subServices)
 
 	addr := "0.0.0.0:" + port
 	log.Printf("marka-backend listening on http://%s", addr)
 	if err := http.ListenAndServe(addr, withCORS(mux)); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func loadServicesFromJSON(path string) error {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	var list []Service
-	if err := json.Unmarshal(b, &list); err != nil {
-		return err
-	}
-	servicesCatalog = list
-	return nil
 }
 
 func handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -85,8 +69,4 @@ func handleHealth(w http.ResponseWriter, r *http.Request) {
 		Service: "marka-backend",
 		Path:    r.URL.Path,
 	})
-}
-
-func handleListServices(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, servicesCatalog)
 }

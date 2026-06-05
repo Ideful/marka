@@ -1,14 +1,23 @@
 "use client";
 
-import type { ServicePriceRow } from "@/data/service-tree";
 import {
   SPECIALIST_TIER_KEYS,
   SPECIALIST_TIER_LABELS,
   type SpecialistTierKey,
 } from "@/data/price-tiers";
+import { formatPriceDisplay } from "@/lib/format-price";
 import { Fragment, useId, useState } from "react";
 
-export function PriceTable({ rows }: { rows: ServicePriceRow[] }) {
+export type PriceTableRow = {
+  name: string;
+  description?: string;
+  prices: {
+    female: Record<SpecialistTierKey, number | string>;
+    male: Record<SpecialistTierKey, number | string>;
+  };
+};
+
+export function PriceTable({ rows }: { rows: PriceTableRow[] }) {
   const selectId = useId();
   const [tier, setTier] = useState<SpecialistTierKey>(SPECIALIST_TIER_KEYS[0]);
 
@@ -87,7 +96,7 @@ export function PriceTable({ rows }: { rows: ServicePriceRow[] }) {
                       key={key}
                       className="whitespace-nowrap px-2 py-3 text-center font-semibold text-ink"
                     >
-                      {row.prices.female[key]}
+                      {formatPriceDisplay(row.prices.female[key])}
                     </td>
                   ))}
                 </tr>
@@ -102,7 +111,7 @@ export function PriceTable({ rows }: { rows: ServicePriceRow[] }) {
                       key={key}
                       className="whitespace-nowrap px-2 py-3 text-center font-semibold text-ink"
                     >
-                      {row.prices.male[key]}
+                      {formatPriceDisplay(row.prices.male[key])}
                     </td>
                   ))}
                 </tr>
@@ -140,7 +149,7 @@ export function PriceTable({ rows }: { rows: ServicePriceRow[] }) {
                   </td>
                   <td className="px-2 py-3 align-middle text-xs text-ink-muted">Жен.</td>
                   <td className="px-2 py-3 align-middle text-right text-sm font-semibold tabular-nums text-ink">
-                    {row.prices.female[tier]}
+                    {formatPriceDisplay(row.prices.female[tier])}
                   </td>
                 </tr>
                 <tr
@@ -150,7 +159,7 @@ export function PriceTable({ rows }: { rows: ServicePriceRow[] }) {
                 >
                   <td className="px-2 py-3 align-middle text-xs text-ink-muted">Муж.</td>
                   <td className="px-2 py-3 align-middle text-right text-sm font-semibold tabular-nums text-ink">
-                    {row.prices.male[tier]}
+                    {formatPriceDisplay(row.prices.male[tier])}
                   </td>
                 </tr>
               </Fragment>

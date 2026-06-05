@@ -19,14 +19,112 @@ tags:
     description: Загрузка файлов (MinIO)
 
 paths:
+  /main-services:
+    get:
+      operationId: listMainServices
+      summary: Каталог — все направления с типами услуг
+      tags:
+        - services
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MainService"
+
+  /main-services/{slug}:
+    get:
+      operationId: getMainService
+      summary: Направление с типами услуг и подуслугами
+      tags:
+        - services
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MainService"
+        "404":
+          description: Не найдено
+
+  /main-services/{slug}/services/{serviceSlug}:
+    get:
+      operationId: getServiceType
+      summary: Тип услуги с подуслугами (прайс)
+      tags:
+        - services
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: serviceSlug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceType"
+        "404":
+          description: Не найдено
+
+  /sub-services:
+    get:
+      operationId: listSubServices
+      summary: Подуслуги по service_type_id
+      tags:
+        - sub-services
+      parameters:
+        - name: service_type_id
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubService"
+    post:
+      operationId: createSubService
+      summary: Создать подуслугу
+      tags:
+        - sub-services
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubServiceInput"
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubService"
+
   /services:
     get:
       operationId: getServices
-      summary: Получить все категории услуг
-      description: |
-        Массив категорий (`Service`). У каждой категории поле **`items`** — подуслуги
-        (`SubService`): у каждой позиции матрица цен **`prices`** по полу (female / male)
-        и по типу специалиста (мастер … арт-директор).
+      summary: "(deprecated) Используйте GET /main-services"
+      deprecated: true
       tags:
         - services
       responses:
@@ -37,9 +135,28 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Service"
+                  $ref: "#/components/schemas/LegacyService"
 
   /sub-services/{id}:
+    get:
+      operationId: getSubService
+      summary: Подуслуга по id
+      tags:
+        - sub-services
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubService"
+        "404":
+          description: Не найдено
     put:
       operationId: updateSubServiceById
       summary: Обновить подуслугу по id
@@ -59,7 +176,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SubService"
+              $ref: "#/components/schemas/SubServiceInput"
       responses:
         "200":
           description: Обновлённая подуслуга
@@ -71,6 +188,22 @@ paths:
           description: Некорректное тело запроса
         "404":
           description: Подуслуга с таким id не найдена
+    delete:
+      operationId: deleteSubService
+      summary: Удалить подуслугу
+      tags:
+        - sub-services
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Удалена
+        "404":
+          description: Не найдена
 
   /uploads/specialist-photo:
     post:
@@ -290,7 +423,58 @@ components:
           type: string
           example: specialists/uuid.jpg
 
-    Service:
+    MainService:
+      type: object
+      required: [id, slug, name, services]
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+          example: hair
+        name:
+          type: string
+          example: Парикмахерские услуги
+        services:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServiceType"
+
+    ServiceType:
+      type: object
+      required: [id, slug, name, description]
+      properties:
+        id:
+          type: integer
+        slug:
+          type: string
+          example: strizhka
+        name:
+          type: string
+          example: Стрижка
+        description:
+          type: string
+        sub_services:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubService"
+
+    SubServiceInput:
+      type: object
+      required: [service_type_id, name, prices]
+      properties:
+        service_type_id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        prices:
+          $ref: "#/components/schemas/GenderedPrices"
+        sort_order:
+          type: integer
+
+    LegacyService:
       type: object
       description: Категория услуг; подуслуги — только в `items`
       required:
@@ -317,7 +501,7 @@ components:
 
     TierPrices:
       type: object
-      description: Цены по типу специалиста
+      description: Цены по типу специалиста (рубли, целое число; 0 = не указано)
       required:
         - master
         - top_master
@@ -326,16 +510,21 @@ components:
         - art_director
       properties:
         master:
-          type: string
-          example: "2 000 ₽"
+          type: integer
+          minimum: 0
+          example: 2000
         top_master:
-          type: string
+          type: integer
+          minimum: 0
         stylist:
-          type: string
+          type: integer
+          minimum: 0
         top_stylist:
-          type: string
+          type: integer
+          minimum: 0
         art_director:
-          type: string
+          type: integer
+          minimum: 0
 
     GenderedPrices:
       type: object
@@ -357,11 +546,11 @@ components:
         - name
         - description
         - prices
+        - sort_order
       properties:
         id:
           type: integer
           format: int64
-          description: Уникальный идентификатор; при `PUT /sub-services/{id}` должен совпадать с id в пути
           example: 111
         name:
           type: string
@@ -371,3 +560,6 @@ components:
           example: Модельная стрижка по длине и типу волос.
         prices:
           $ref: "#/components/schemas/GenderedPrices"
+        sort_order:
+          type: integer
+          example: 0

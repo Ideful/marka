@@ -1,15 +1,26 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { serviceCatalog } from "@/lib/domain/service-catalog";
+import { fetchMainServices } from "@/lib/api/services";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Услуги и цены",
   description: "Разделы услуг салона: переходите к видам и подтипам с актуальными ценами.",
 };
 
-export default function ServicesIndexPage() {
-  const categories = serviceCatalog.listCategories();
+export default async function ServicesIndexPage() {
+  let categories: Awaited<ReturnType<typeof fetchMainServices>> = [];
+  let loadError: string | null = null;
+
+  try {
+    categories = await fetchMainServices();
+  } catch {
+    loadError =
+      "Не удалось загрузить каталог услуг. Проверьте, что запущен backend (make dev-backend).";
+  }
+
   return (
     <>
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-20">
@@ -20,25 +31,28 @@ export default function ServicesIndexPage() {
           Услуги и цены
         </h1>
         <p className="mt-4 max-w-2xl text-ink-muted">
-          Выберите направление — на странице раздела перечислены подтипы услуг и отдельные страницы с прайсом.
+          Выберите направление — на странице раздела перечислены типы услуг и отдельные страницы с прайсом.
         </p>
 
-        <ul className="mt-12 grid gap-4 sm:grid-cols-2">
-          {categories.map((c) => (
-            <li key={c.slug}>
-              <Link
-                href={`/services/${c.slug}`}
-                className="flex flex-col rounded-2xl border border-ink/10 bg-white p-6 shadow-sm transition hover:border-accent/40 hover:shadow-md"
-              >
-                <span className="text-lg font-semibold text-ink">{c.title}</span>
-                {c.teaser ? (
-                  <span className="mt-2 text-sm text-ink-muted">{c.teaser}</span>
-                ) : null}
-                <span className="mt-4 text-sm font-medium text-accent">Открыть →</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        {loadError ? (
+          <p className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            {loadError}
+          </p>
+        ) : (
+          <ul className="mt-12 grid gap-4 sm:grid-cols-2">
+            {categories.map((c) => (
+              <li key={c.slug}>
+                <Link
+                  href={`/services/${c.slug}`}
+                  className="flex flex-col rounded-2xl border border-ink/10 bg-white p-6 shadow-sm transition hover:border-accent/40 hover:shadow-md"
+                >
+                  <span className="text-lg font-semibold text-ink">{c.name}</span>
+                  <span className="mt-4 text-sm font-medium text-accent">Открыть →</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       <SiteFooter />
     </>

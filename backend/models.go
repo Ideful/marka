@@ -1,20 +1,29 @@
 package main
 
-// Service — категория услуг; в JSON поле items — массив SubService (строки прайса).
-type Service struct {
-	ID          int          `json:"id"`
-	Name        string       `json:"name"`
-	Description string       `json:"description"`
-	Items       []SubService `json:"items"`
+// MainService — верхний уровень каталога (5 направлений салона).
+type MainService struct {
+	ID       int           `json:"id"`
+	Slug     string        `json:"slug"`
+	Name     string        `json:"name"`
+	Services []ServiceType `json:"services"`
 }
 
-// TierPrices — цена по типу специалиста.
+// ServiceType — тип услуг внутри направления (например «Стрижка» в парикмахерских).
+type ServiceType struct {
+	ID          int          `json:"id"`
+	Slug        string       `json:"slug"`
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	SubServices []SubService `json:"sub_services"`
+}
+
+// TierPrices — цена по типу специалиста (рубли, целое число; 0 = не указано).
 type TierPrices struct {
-	Master      string `json:"master"`
-	TopMaster   string `json:"top_master"`
-	Stylist     string `json:"stylist"`
-	TopStylist  string `json:"top_stylist"`
-	ArtDirector string `json:"art_director"`
+	Master      int `json:"master"`
+	TopMaster   int `json:"top_master"`
+	Stylist     int `json:"stylist"`
+	TopStylist  int `json:"top_stylist"`
+	ArtDirector int `json:"art_director"`
 }
 
 // GenderedPrices — цены для женщин и мужчин.
@@ -29,6 +38,7 @@ type SubService struct {
 	Name        string         `json:"name"`
 	Description string         `json:"description"`
 	Prices      GenderedPrices `json:"prices"`
+	SortOrder   int            `json:"sort_order"`
 }
 
 type DescriptionSection struct {
