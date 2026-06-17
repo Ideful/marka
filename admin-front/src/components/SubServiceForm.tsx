@@ -1,5 +1,12 @@
 import { useState, type FormEvent } from "react";
 import {
+  HAIR_LENGTH_KEYS,
+  HAIR_LENGTH_LABELS,
+  emptyLengthPrices,
+  validateLengthPrices,
+  type LengthPrices,
+} from "../types/length-prices";
+import {
   SPECIALIST_TIER_KEYS,
   SPECIALIST_TIER_LABELS,
   emptyGenderedPrices,
@@ -14,6 +21,7 @@ import type { SubService, SubServiceInput } from "../types/services";
 type Props = {
   title: string;
   serviceTypeId: number;
+  serviceSlug?: string;
   initial?: SubService;
   onSubmit: (data: SubServiceInput) => Promise<void>;
   onCancel: () => void;
@@ -24,6 +32,11 @@ function pricesFromInitial(initial?: SubService): GenderedPrices {
   return emptyGenderedPrices();
 }
 
+function lengthPricesFromInitial(initial?: SubService): LengthPrices {
+  if (initial?.length_prices) return initial.length_prices;
+  return emptyLengthPrices();
+}
+
 function priceInputValue(value: number): string {
   return value > 0 ? String(value) : "";
 }
@@ -31,14 +44,19 @@ function priceInputValue(value: number): string {
 export function SubServiceForm({
   title,
   serviceTypeId,
+  serviceSlug,
   initial,
   onSubmit,
   onCancel,
 }: Props) {
+  const useLengthPrices = serviceSlug === "okrashivanie";
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [sortOrder, setSortOrder] = useState(initial?.sort_order ?? 0);
   const [prices, setPrices] = useState<GenderedPrices>(() => pricesFromInitial(initial));
+  const [lengthPrices, setLengthPrices] = useState<LengthPrices>(() =>
+    lengthPricesFromInitial(initial),
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,21 +74,38 @@ export function SubServiceForm({
     }));
   }
 
+  function updateLengthPrice(key: keyof LengthPrices, raw: string) {
+    if (raw !== "" && !/^\d*$/.test(raw)) {
+      return;
+    }
+    setLengthPrices((prev) => ({ ...prev, [key]: parsePriceInput(raw) }));
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!name.trim()) {
       setError("Укажите название");
       return;
     }
-    const priceError = validateGenderedPrices(prices);
-    if (priceError) {
-      setError(priceError);
-      return;
+
+    if (useLengthPrices) {
+      const priceError = validateLengthPrices(lengthPrices);
+      if (priceError) {
+        setError(priceError);
+        return;
+      }
+    } else {
+      const priceError = validateGenderedPrices(prices);
+      if (priceError) {
+        setError(priceError);
+        return;
+      }
+      if (!pricesHasValue(prices)) {
+        setError("Укажите хотя бы одну цену больше 0");
+        return;
+      }
     }
-    if (!pricesHasValue(prices)) {
-      setError("Укажите хотя бы одну цену больше 0");
-      return;
-    }
+
     setSaving(true);
     setError(null);
     try {
@@ -78,8 +113,8 @@ export function SubServiceForm({
         service_type_id: serviceTypeId,
         name: name.trim(),
         description: description.trim(),
-        prices,
         sort_order: sortOrder,
+        ...(useLengthPrices ? { length_prices: lengthPrices } : { prices }),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка сохранения");
@@ -111,7 +146,7 @@ export function SubServiceForm({
           id="sub-desc"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          rows={3}
+          rows={4}
           disabled={saving}
         />
       </div>
@@ -130,40 +165,73 @@ export function SubServiceForm({
       </div>
 
       <div className="form-field">
-        <span className="form-label">Цены (руб., только цифры)</span>
+        <span className="form-label">
+          {useLengthPrices ? "Цены по длине волос (руб.)" : "Цены (руб., только цифры)"}
+        </span>
         <p className="sections-editor-hint">Символ ₽ на сайте добавится автоматически.</p>
-        <div className="sections-table-wrap">
-          <table className="sections-table price-matrix">
-            <thead>
-              <tr>
-                <th>Пол</th>
-                {SPECIALIST_TIER_KEYS.map((key) => (
-                  <th key={key}>{SPECIALIST_TIER_LABELS[key]}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {(["female", "male"] as const).map((gender) => (
-                <tr key={gender}>
-                  <td>{gender === "female" ? "Женщины" : "Мужчины"}</td>
-                  {SPECIALIST_TIER_KEYS.map((key) => (
+        {useLengthPrices ? (
+          <div className="sections-table-wrap">
+            <table className="sections-table price-matrix">
+              <thead>
+                <tr>
+                  {HAIR_LENGTH_KEYS.map((key) => (
+                    <th key={key}>{HAIR_LENGTH_LABELS[key]}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {HAIR_LENGTH_KEYS.map((key) => (
                     <td key={key}>
                       <input
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"
-                        value={priceInputValue(prices[gender][key])}
-                        placeholder="2000"
+                        value={priceInputValue(lengthPrices[key])}
+                        placeholder="6000"
                         disabled={saving}
-                        onChange={(e) => updatePrice(gender, key, e.target.value)}
+                        onChange={(e) => updateLengthPrice(key, e.target.value)}
                       />
                     </td>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="sections-table-wrap">
+            <table className="sections-table price-matrix">
+              <thead>
+                <tr>
+                  <th>Пол</th>
+                  {SPECIALIST_TIER_KEYS.map((key) => (
+                    <th key={key}>{SPECIALIST_TIER_LABELS[key]}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(["female", "male"] as const).map((gender) => (
+                  <tr key={gender}>
+                    <td>{gender === "female" ? "Женщины" : "Мужчины"}</td>
+                    {SPECIALIST_TIER_KEYS.map((key) => (
+                      <td key={key}>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={priceInputValue(prices[gender][key])}
+                          placeholder="2000"
+                          disabled={saving}
+                          onChange={(e) => updatePrice(gender, key, e.target.value)}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <div className="form-actions">

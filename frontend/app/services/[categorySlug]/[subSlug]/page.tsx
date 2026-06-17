@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContactsPanel } from "@/components/contacts/ContactsPanel";
+import { HairOkrashivanieView } from "@/components/services/HairOkrashivanieView";
+import { HairUkladkaView } from "@/components/services/HairUkladkaView";
 import { ServiceTypeView } from "@/components/services/ServiceTypeView";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import {
@@ -41,11 +43,19 @@ export default async function ServiceSubPage({ params }: Props) {
   if (!main || !service) notFound();
 
   const rows = (service.sub_services ?? []).map(subServiceToPriceRow);
+  const isHairUkladka = categorySlug === "hair" && subSlug === "ukladka";
+  const isHairOkrashivanie = categorySlug === "hair" && subSlug === "okrashivanie";
 
   return (
     <>
       <article className="px-4 py-12 md:px-6 md:py-16">
-        <ServiceTypeView main={main} service={service} rows={rows} />
+        {isHairUkladka ? (
+          <HairUkladkaView main={main} service={service} rows={rows} />
+        ) : isHairOkrashivanie ? (
+          <HairOkrashivanieView main={main} service={service} rows={rows} />
+        ) : (
+          <ServiceTypeView main={main} service={service} rows={rows} />
+        )}
       </article>
       <ContactsPanel />
       <SiteFooter />

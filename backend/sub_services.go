@@ -93,7 +93,7 @@ func (s *subServiceStore) get(ctx context.Context, id int) (SubService, error) {
 }
 
 func (s *subServiceStore) create(ctx context.Context, serviceTypeID int, in SubService) (SubService, error) {
-	prices, err := marshalPrices(in.Prices)
+	prices, err := marshalSubServicePrices(in.Prices, in.LengthPrices)
 	if err != nil {
 		return SubService{}, err
 	}
@@ -110,7 +110,7 @@ func (s *subServiceStore) create(ctx context.Context, serviceTypeID int, in SubS
 }
 
 func (s *subServiceStore) update(ctx context.Context, id int, in SubService) (SubService, error) {
-	prices, err := marshalPrices(in.Prices)
+	prices, err := marshalSubServicePrices(in.Prices, in.LengthPrices)
 	if err != nil {
 		return SubService{}, err
 	}
@@ -140,11 +140,12 @@ func (s *subServiceStore) delete(ctx context.Context, id int) error {
 }
 
 type subServiceInput struct {
-	ServiceTypeID int            `json:"service_type_id"`
-	Name          string         `json:"name"`
-	Description   string         `json:"description"`
-	Prices        GenderedPrices `json:"prices"`
-	SortOrder     int            `json:"sort_order"`
+	ServiceTypeID int             `json:"service_type_id"`
+	Name          string          `json:"name"`
+	Description   string          `json:"description"`
+	Prices        *GenderedPrices `json:"prices,omitempty"`
+	LengthPrices  *LengthPrices   `json:"length_prices,omitempty"`
+	SortOrder     int             `json:"sort_order"`
 }
 
 type subServiceRowScanner interface {
@@ -157,8 +158,56 @@ func scanSubService(row subServiceRowScanner) (SubService, error) {
 	if err := row.Scan(&sub.ID, &sub.Name, &sub.Description, &pricesRaw, &sub.SortOrder); err != nil {
 		return SubService{}, err
 	}
-	sub.Prices = parsePricesJSON(pricesRaw)
+	sub.Prices, sub.LengthPrices = parseSubServicePricesJSON(pricesRaw)
 	return sub, nil
+}
+
+func validateSubServiceInput(body subServiceInput) error {
+	if strings.TrimSpace(body.Name) == "" {
+		return errors.New("name is required")
+	}
+
+	hasLength := body.LengthPrices != nil
+	hasTier := body.Prices != nil && pricesHasValue(normalizePrices(*body.Prices))
+
+	if hasLength {
+		normalized := normalizeLengthPrices(*body.LengthPrices)
+		if err := validateLengthPrices(normalized); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if hasTier {
+		normalized := normalizePrices(*body.Prices)
+		if err := validatePrices(normalized); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	return errors.New("prices or length_prices is required")
+}
+
+func subServiceFromInput(body subServiceInput) SubService {
+	sub := SubService{
+		Name:        body.Name,
+		Description: body.Description,
+		SortOrder:   body.SortOrder,
+	}
+
+	if body.LengthPrices != nil {
+		normalized := normalizeLengthPrices(*body.LengthPrices)
+		sub.LengthPrices = &normalized
+		return sub
+	}
+
+	if body.Prices != nil {
+		normalized := normalizePrices(*body.Prices)
+		sub.Prices = &normalized
+	}
+
+	return sub
 }
 
 func registerSubServiceRoutes(mux *http.ServeMux, store *subServiceStore) {
@@ -224,21 +273,11 @@ func (s *subServiceStore) handleCreate(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, http.StatusBadRequest, "name is required")
 		return
 	}
-	body.Prices = normalizePrices(body.Prices)
-	if err := validatePrices(body.Prices); err != nil {
+	if err := validateSubServiceInput(body); err != nil {
 		writeAPIError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	if !pricesHasValue(body.Prices) {
-		writeAPIError(w, http.StatusBadRequest, "at least one price must be greater than 0")
-		return
-	}
-	sub, err := s.create(r.Context(), body.ServiceTypeID, SubService{
-		Name:        body.Name,
-		Description: body.Description,
-		Prices:      body.Prices,
-		SortOrder:   body.SortOrder,
-	})
+	sub, err := s.create(r.Context(), body.ServiceTypeID, subServiceFromInput(body))
 	if err != nil {
 		writeAPIError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -261,21 +300,11 @@ func (s *subServiceStore) handleUpdate(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, http.StatusBadRequest, "name is required")
 		return
 	}
-	body.Prices = normalizePrices(body.Prices)
-	if err := validatePrices(body.Prices); err != nil {
+	if err := validateSubServiceInput(body); err != nil {
 		writeAPIError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	if !pricesHasValue(body.Prices) {
-		writeAPIError(w, http.StatusBadRequest, "at least one price must be greater than 0")
-		return
-	}
-	sub, err := s.update(r.Context(), id, SubService{
-		Name:        body.Name,
-		Description: body.Description,
-		Prices:      body.Prices,
-		SortOrder:   body.SortOrder,
-	})
+	sub, err := s.update(r.Context(), id, subServiceFromInput(body))
 	if errors.Is(err, errNotFound) {
 		writeAPIError(w, http.StatusNotFound, "sub service not found")
 		return

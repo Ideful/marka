@@ -459,9 +459,23 @@ components:
           items:
             $ref: "#/components/schemas/SubService"
 
+    LengthPrices:
+      type: object
+      description: Цены по длине волос (рубли; 0 = не указано)
+      properties:
+        short:
+          type: integer
+          minimum: 0
+        medium:
+          type: integer
+          minimum: 0
+        long:
+          type: integer
+          minimum: 0
+
     SubServiceInput:
       type: object
-      required: [service_type_id, name, prices]
+      required: [service_type_id, name]
       properties:
         service_type_id:
           type: integer
@@ -471,6 +485,8 @@ components:
           type: string
         prices:
           $ref: "#/components/schemas/GenderedPrices"
+        length_prices:
+          $ref: "#/components/schemas/LengthPrices"
         sort_order:
           type: integer
 
@@ -545,7 +561,6 @@ components:
         - id
         - name
         - description
-        - prices
         - sort_order
       properties:
         id:
@@ -560,6 +575,8 @@ components:
           example: Модельная стрижка по длине и типу волос.
         prices:
           $ref: "#/components/schemas/GenderedPrices"
+        length_prices:
+          $ref: "#/components/schemas/LengthPrices"
         sort_order:
           type: integer
           example: 0

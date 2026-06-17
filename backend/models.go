@@ -32,13 +32,21 @@ type GenderedPrices struct {
 	Male   TierPrices `json:"male"`
 }
 
+// LengthPrices — цены по длине волос (рубли; 0 = не указано).
+type LengthPrices struct {
+	Short  int `json:"short"`
+	Medium int `json:"medium"`
+	Long   int `json:"long"`
+}
+
 // SubService — одна строка прайса с матрицей цен.
 type SubService struct {
-	ID          int            `json:"id"`
-	Name        string         `json:"name"`
-	Description string         `json:"description"`
-	Prices      GenderedPrices `json:"prices"`
-	SortOrder   int            `json:"sort_order"`
+	ID           int             `json:"id"`
+	Name         string          `json:"name"`
+	Description  string          `json:"description"`
+	Prices       *GenderedPrices `json:"prices,omitempty"`
+	LengthPrices *LengthPrices   `json:"length_prices,omitempty"`
+	SortOrder    int             `json:"sort_order"`
 }
 
 type DescriptionSection struct {

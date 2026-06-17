@@ -1,6 +1,8 @@
 import { getApiBaseUrl } from "@/lib/api/config";
 import type { SpecialistTierKey } from "@/data/price-tiers";
+import type { LengthPrices } from "@/data/hair-lengths";
 import { normalizeGenderedPrices } from "@/lib/format-price";
+import { normalizeLengthPrices } from "@/data/hair-lengths";
 
 export type ApiTierPrices = Record<SpecialistTierKey, number>;
 
@@ -13,7 +15,8 @@ export type SubService = {
   id: number;
   name: string;
   description: string;
-  prices: ApiGenderedPrices;
+  prices?: ApiGenderedPrices;
+  length_prices?: LengthPrices;
   sort_order: number;
 };
 
@@ -36,7 +39,8 @@ export type ServicePriceRow = {
   id?: number;
   name: string;
   description?: string;
-  prices: ApiGenderedPrices;
+  prices?: ApiGenderedPrices;
+  length_prices?: LengthPrices;
 };
 
 export function subServiceToPriceRow(sub: SubService): ServicePriceRow {
@@ -44,7 +48,8 @@ export function subServiceToPriceRow(sub: SubService): ServicePriceRow {
     id: sub.id,
     name: sub.name,
     description: sub.description || undefined,
-    prices: normalizeGenderedPrices(sub.prices),
+    prices: sub.prices ? normalizeGenderedPrices(sub.prices) : undefined,
+    length_prices: sub.length_prices ? normalizeLengthPrices(sub.length_prices) : undefined,
   };
 }
 

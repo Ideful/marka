@@ -175,3 +175,108 @@ func pricesHasValue(prices GenderedPrices) bool {
 func tierHasValue(t TierPrices) bool {
 	return t.Master > 0 || t.TopMaster > 0 || t.Stylist > 0 || t.TopStylist > 0 || t.ArtDirector > 0
 }
+
+func lengthHasValue(prices LengthPrices) bool {
+	return prices.Short > 0 || prices.Medium > 0 || prices.Long > 0
+}
+
+func normalizeLengthPrices(prices LengthPrices) LengthPrices {
+	return LengthPrices{
+		Short:  maxInt(prices.Short, 0),
+		Medium: maxInt(prices.Medium, 0),
+		Long:   maxInt(prices.Long, 0),
+	}
+}
+
+func validateLengthPrices(prices LengthPrices) error {
+	check := func(field string, value int) error {
+		if value < 0 {
+			return fmt.Errorf("length_prices.%s must be a non-negative integer", field)
+		}
+		return nil
+	}
+	if err := check("short", prices.Short); err != nil {
+		return err
+	}
+	if err := check("medium", prices.Medium); err != nil {
+		return err
+	}
+	if err := check("long", prices.Long); err != nil {
+		return err
+	}
+	return nil
+}
+
+func marshalSubServicePrices(gendered *GenderedPrices, length *LengthPrices) ([]byte, error) {
+	if length != nil {
+		normalized := normalizeLengthPrices(*length)
+		return json.Marshal(struct {
+			Mode   string `json:"mode"`
+			Short  int    `json:"short"`
+			Medium int    `json:"medium"`
+			Long   int    `json:"long"`
+		}{
+			Mode:   "length",
+			Short:  normalized.Short,
+			Medium: normalized.Medium,
+			Long:   normalized.Long,
+		})
+	}
+
+	prices := GenderedPrices{}
+	if gendered != nil {
+		prices = normalizePrices(*gendered)
+	}
+	return json.Marshal(struct {
+		Mode   string         `json:"mode"`
+		Female TierPrices     `json:"female"`
+		Male   TierPrices     `json:"male"`
+	}{
+		Mode:   "tier",
+		Female: prices.Female,
+		Male:   prices.Male,
+	})
+}
+
+func parseSubServicePricesJSON(raw []byte) (*GenderedPrices, *LengthPrices) {
+	if len(raw) == 0 {
+		return nil, nil
+	}
+
+	var envelope struct {
+		Mode   string                     `json:"mode"`
+		Short  int                        `json:"short"`
+		Medium int                        `json:"medium"`
+		Long   int                        `json:"long"`
+		Female map[string]json.RawMessage `json:"female"`
+		Male   map[string]json.RawMessage `json:"male"`
+	}
+	if err := json.Unmarshal(raw, &envelope); err != nil {
+		return nil, nil
+	}
+
+	if envelope.Mode == "length" {
+		length := normalizeLengthPrices(LengthPrices{
+			Short:  envelope.Short,
+			Medium: envelope.Medium,
+			Long:   envelope.Long,
+		})
+		return nil, &length
+	}
+
+	if envelope.Female == nil && envelope.Male == nil &&
+		(envelope.Short > 0 || envelope.Medium > 0 || envelope.Long > 0) {
+		length := normalizeLengthPrices(LengthPrices{
+			Short:  envelope.Short,
+			Medium: envelope.Medium,
+			Long:   envelope.Long,
+		})
+		return nil, &length
+	}
+
+	prices := parsePricesJSON(raw)
+	if !pricesHasValue(prices) {
+		return nil, nil
+	}
+	return &prices, nil
+}

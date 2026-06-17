@@ -243,6 +243,7 @@ export function SubServicesPage() {
             <SubServiceForm
               title={modal === "create" ? "Новая подуслуга" : "Редактирование"}
               serviceTypeId={serviceTypeId}
+              serviceSlug={selectedService?.slug}
               initial={editing ?? undefined}
               onSubmit={modal === "create" ? handleCreate : handleUpdate}
               onCancel={() => {

@@ -100,12 +100,20 @@ func seedServicesCatalog(ctx context.Context, pool *pgxpool.Pool) error {
 }
 
 func seedHairSubServices(ctx context.Context, pool *pgxpool.Pool, hairID int) error {
+	ptrTierPrices := func(prices GenderedPrices) *GenderedPrices {
+		if pricesHasValue(prices) {
+			return &prices
+		}
+		return nil
+	}
+
 	type seedRow struct {
-		serviceSlug string
-		name        string
-		description string
-		prices      GenderedPrices
-		order       int
+		serviceSlug  string
+		name         string
+		description  string
+		order        int
+		tierPrices   GenderedPrices
+		lengthPrices *LengthPrices
 	}
 
 	rows := []seedRow{
@@ -114,7 +122,7 @@ func seedHairSubServices(ctx context.Context, pool *pgxpool.Pool, hairID int) er
 			name:        "Стрижка (пример)",
 			description: "Модельная стрижка по длине и типу волос; точную стоимость уточняйте у мастера.",
 			order:       1,
-			prices: GenderedPrices{
+			tierPrices: GenderedPrices{
 				Female: TierPrices{
 					Master: 2000, TopMaster: 2500, Stylist: 3000,
 					TopStylist: 3500, ArtDirector: 4500,
@@ -130,7 +138,7 @@ func seedHairSubServices(ctx context.Context, pool *pgxpool.Pool, hairID int) er
 			name:        "Стрижка + укладка",
 			description: "Стрижка и укладка феном или диффузором.",
 			order:       2,
-			prices: GenderedPrices{
+			tierPrices: GenderedPrices{
 				Female: TierPrices{
 					Master: 3500, TopMaster: 4000, Stylist: 4500,
 					TopStylist: 5000, ArtDirector: 6000,
@@ -141,14 +149,83 @@ func seedHairSubServices(ctx context.Context, pool *pgxpool.Pool, hairID int) er
 				},
 			},
 		},
+	}
+
+	ukladkaPrices := GenderedPrices{
+		Female: TierPrices{
+			Master: 1700, TopMaster: 2200, Stylist: 2800,
+			TopStylist: 3300, ArtDirector: 3900,
+		},
+		Male: TierPrices{
+			Master: 1700, TopMaster: 2200, Stylist: 2800,
+			TopStylist: 3300, ArtDirector: 3900,
+		},
+	}
+
+	ukladkaRows := []seedRow{
+		{
+			serviceSlug: "ukladka",
+			name:        "Укладка Дневная",
+			description: "В стоимость услуги входит: мытьё головы шампунем и кондиционером, сушка феном, укладка щёткой с использованием профессиональных средств.",
+			order:       1,
+			tierPrices:  ukladkaPrices,
+		},
+		{
+			serviceSlug: "ukladka",
+			name:        "Укладка Коктейльная",
+			description: "В стоимость услуги входит: мытьё головы шампунем и кондиционером, сушка феном, укладка с использованием горячих инструментов (плойка/стайлер) для создания локонов.",
+			order:       2,
+			tierPrices:  ukladkaPrices,
+		},
+		{
+			serviceSlug: "ukladka",
+			name:        "Укладка Вечерняя",
+			description: "В стоимость услуги входит: мытьё головы шампунем и кондиционером, сушка феном, укладка с использованием горячих инструментов (плойка/стайлер) для создания локонов.",
+			order:       3,
+			tierPrices: GenderedPrices{
+				Female: TierPrices{TopStylist: 3300},
+				Male:   TierPrices{TopStylist: 3300},
+			},
+		},
+	}
+
+	okrashivanieLength := func(short, medium, long int) *LengthPrices {
+		return &LengthPrices{Short: short, Medium: medium, Long: long}
+	}
+
+	okrashivanieRows := []seedRow{
+		{
+			serviceSlug: "okrashivanie",
+			name:        "Окрашивание",
+			description: "В стоимость процедуры входит: консультация, подбор красителя (бренды Aveda, Original Mineral, Loreal), мытьё головы профессиональным шампунем, защитный уход.",
+			order:       1,
+			lengthPrices: okrashivanieLength(6000, 4000, 8000),
+		},
 		{
 			serviceSlug: "okrashivanie",
 			name:        "Тонирование",
-			description: "",
-			order:       1,
-			prices:      GenderedPrices{},
+			description: "Кислотные красители без аммиака (бренды Aveda, Original Mineral, Loreal).",
+			order:       2,
+			lengthPrices: okrashivanieLength(5500, 3800, 7500),
+		},
+		{
+			serviceSlug: "okrashivanie",
+			name:        "Блондирование",
+			description: "Обесцвечивание (порошок/крем), тонирование, восстанавливающий уход. Обязательна консультация перед процедурой.",
+			order:       3,
+			lengthPrices: okrashivanieLength(7000, 5000, 9000),
+		},
+		{
+			serviceSlug: "okrashivanie",
+			name:        "Сложное окрашивание",
+			description: "Стоимость зависит от длины и густоты волос. Техники: шатуш, балаяж, babyblonde и др. В итоговую цену входит расход материалов и сложность работы. Перед процедурой необходима консультация.",
+			order:       4,
+			lengthPrices: &LengthPrices{},
 		},
 	}
+
+	rows = append(rows, ukladkaRows...)
+	rows = append(rows, okrashivanieRows...)
 
 	for _, row := range rows {
 		var serviceTypeID int
@@ -173,7 +250,7 @@ func seedHairSubServices(ctx context.Context, pool *pgxpool.Pool, hairID int) er
 			continue
 		}
 
-		pricesRaw, err := marshalPrices(row.prices)
+		pricesRaw, err := marshalSubServicePrices(ptrTierPrices(row.tierPrices), row.lengthPrices)
 		if err != nil {
 			return err
 		}
