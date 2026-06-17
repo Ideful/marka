@@ -13,6 +13,7 @@ MINIO_USE_SSL ?= false
 MINIO_PUBLIC_URL ?= http://localhost:9000/marka
 
 .PHONY: help install install-frontend install-admin dev-frontend dev-admin dev-backend start-backend \
+	docker-up docker-down docker-logs docker-ps \
 	docker-frontend-build docker-frontend-up docker-frontend-down docker-frontend-logs \
 	docker-infra-up docker-infra-down
 
@@ -20,16 +21,15 @@ help:
 	@echo "Projects: frontend/ | admin-front/ | backend/"
 	@echo ""
 	@echo "Available targets:"
-	@echo "  make install          - install deps for frontend and admin-front"
+	@echo "  make docker-up        - build & run full stack in Docker (recommended on server)"
+	@echo "  make docker-down      - stop all containers"
+	@echo "  make docker-logs      - follow logs"
+	@echo "  make docker-ps        - container status"
+	@echo "  make install          - install deps for frontend and admin-front (local dev)"
 	@echo "  make dev-frontend     - run frontend (default port 3000)"
 	@echo "  make dev-admin        - run admin-front (default port 5173)"
 	@echo "  make dev-backend      - run backend (needs Postgres, port 3001)"
-	@echo "  make start-backend    - run backend (same as dev-backend)"
-	@echo "  make docker-infra-up  - Postgres + MinIO in Docker"
-	@echo "  make docker-infra-down - stop Postgres + MinIO"
-	@echo "  make docker-frontend-build - build frontend Docker image"
-	@echo "  make docker-frontend-up    - run frontend in Docker (port 3000)"
-	@echo "  make docker-frontend-down  - stop frontend container"
+	@echo "  make docker-infra-up  - Postgres + MinIO only (local dev)"
 	@echo ""
 	@echo "Custom port examples:"
 	@echo "  make dev-frontend PORT=4000"
@@ -82,6 +82,18 @@ else
 endif
 
 start-backend: dev-backend
+
+docker-up:
+	$(DOCKER_COMPOSE) up -d --build
+
+docker-down:
+	$(DOCKER_COMPOSE) down
+
+docker-logs:
+	$(DOCKER_COMPOSE) logs -f
+
+docker-ps:
+	$(DOCKER_COMPOSE) ps
 
 docker-frontend-build:
 	$(DOCKER_COMPOSE) build frontend

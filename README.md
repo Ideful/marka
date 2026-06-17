@@ -22,7 +22,25 @@ marka/
 
 Инфраструктура (Postgres, MinIO, опционально frontend в Docker) — в корневом `docker-compose.yml`.
 
-## Быстрый старт
+## Запуск на сервере (Docker, одна команда)
+
+```bash
+git clone <url> marka && cd marka
+cp .env.example .env
+# в .env укажите IP сервера для CORS и фото MinIO (см. комментарии)
+make docker-up
+```
+
+| Сервис | URL |
+|--------|-----|
+| Сайт | http://&lt;IP&gt;:3000 |
+| API | http://&lt;IP&gt;:3001 |
+| Админка | http://&lt;IP&gt;:5173 |
+| MinIO | http://&lt;IP&gt;:9001 |
+
+Логи: `make docker-logs` · Остановка: `make docker-down`
+
+## Локальная разработка
 
 ```bash
 cp .env.example .env   # при необходимости

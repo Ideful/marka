@@ -1,31 +1,6 @@
-# Публичный сайт, MinIO, PostgreSQL.
+# Весь стек: postgres, minio, backend, frontend, admin.
+# Запуск: docker compose up -d --build
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      # args (опционально): NEXT_PUBLIC_SITE_URL, NEXT_PUBLIC_BOOKING_URL
-    ports:
-      - "${PORT:-3000}:3000"
-    environment:
-      NODE_ENV: production
-      PORT: "3000"
-    restart: unless-stopped
-
-  minio:
-    image: quay.io/minio/minio:latest
-    container_name: minio_s3
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin_password
-    volumes:
-      - ./data:/data
-    command: server /data --console-address ":9001"
-    restart: unless-stopped
-
   postgres:
     image: postgres:16-alpine
     container_name: marka_postgres
@@ -41,8 +16,76 @@ services:
       test: ["CMD-SHELL", "pg_isready -U marka -d marka"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+    restart: unless-stopped
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: minio_s3
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin_password
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: marka_backend
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: "3001"
+      DATABASE_URL: postgres://marka:marka@postgres:5432/marka?sslmode=disable
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin_password
+      MINIO_BUCKET: marka
+      MINIO_USE_SSL: "false"
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9000/marka}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: marka_frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+      API_URL: http://backend:3001
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
+
+  admin:
+    build:
+      context: ./admin-front
+      dockerfile: Dockerfile
+    container_name: marka_admin
+    ports:
+      - "${ADMIN_PORT:-5173}:80"
+    depends_on:
+      backend:
+        condition: service_started
     restart: unless-stopped
 
 volumes:
   pgdata:
+  minio_data:
