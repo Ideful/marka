@@ -14,6 +14,10 @@ export function resolvePhotoUrl(photoUrl: string, apiBase: string): string {
     return photoUrl;
   }
   if (photoUrl.startsWith("/")) {
+    // Фото MinIO: /marka/... — тот же хост, что и сайт/админка
+    if (photoUrl.startsWith("/marka/")) {
+      return photoUrl;
+    }
     return `${apiBase}${photoUrl}`;
   }
   return photoUrl;

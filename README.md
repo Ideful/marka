@@ -22,23 +22,30 @@ marka/
 
 Инфраструктура (Postgres, MinIO, опционально frontend в Docker) — в корневом `docker-compose.yml`.
 
-## Запуск на сервере (Docker, одна команда)
+## Запуск на сервере (Docker)
+
+`.env` **не нужен** — IP нигде в репозитории не хранится. Фото отдаются по пути `/marka/...` через прокси.
 
 ```bash
 git clone <url> marka && cd marka
-cp .env.example .env
-# в .env укажите IP сервера для CORS и фото MinIO (см. комментарии)
 make docker-up
 ```
 
 | Сервис | URL |
 |--------|-----|
-| Сайт | http://&lt;IP&gt;:3000 |
-| API | http://&lt;IP&gt;:3001 |
-| Админка | http://&lt;IP&gt; (порт 80) |
-| MinIO | http://&lt;IP&gt;:9001 |
+| Сайт | `http://<ваш-ip>:3000` |
+| API | `http://<ваш-ip>:3001` |
+| Админка | `http://<ваш-ip>` (порт 80) |
 
-Логи: `make docker-logs` · Остановка: `make docker-down`
+### Обновление после `git pull`
+
+```bash
+cd marka
+git pull
+docker compose up -d --build
+```
+
+Пересобираются только изменённые образы. Логи: `make docker-logs` · Остановка: `make docker-down`
 
 ### Ошибка `429 Too Many Requests` (лимит Docker Hub)
 

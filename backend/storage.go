@@ -44,7 +44,8 @@ func newObjectStorage(ctx context.Context) (*objectStorage, error) {
 	secretKey := envOr("MINIO_SECRET_KEY", "minioadmin_password")
 	bucket := envOr("MINIO_BUCKET", "marka")
 	useSSL := envOr("MINIO_USE_SSL", "false") == "true"
-	publicBase := strings.TrimRight(envOr("MINIO_PUBLIC_URL", "http://localhost:9000/"+bucket), "/")
+	// По умолчанию — относительный путь /marka/... (проксируется nginx/Next, IP в git не нужен).
+	publicBase := strings.TrimRight(envOr("MINIO_PUBLIC_URL", "/"+bucket), "/")
 
 	client, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKey, secretKey, ""),
@@ -81,24 +82,26 @@ func (s *objectStorage) ensureBucket(ctx context.Context) error {
 		return fmt.Errorf("bucket exists: %w", err)
 	}
 
-	created := false
 	if !exists {
 		if err := s.client.MakeBucket(ctx, s.bucket, minio.MakeBucketOptions{}); err != nil {
 			return fmt.Errorf("make bucket: %w", err)
 		}
-		created = true
 		log.Printf("minio: created bucket %q", s.bucket)
 	}
 
-	// Политику выставляем только при первом создании бакета — повторный SetBucketPolicy
-	// на каждом старте backend даёт rate limit в MinIO.
-	if created {
-		policy := publicReadPolicy(s.bucket, specialistPhotoPrefix)
-		if err := setBucketPolicyWithRetry(ctx, s.client, s.bucket, policy); err != nil {
-			log.Printf("minio: warning: bucket policy not set (%v); uploads work, public URLs may not", err)
-		}
+	if err := s.ensurePublicReadPolicy(ctx); err != nil {
+		log.Printf("minio: warning: bucket policy not set (%v); public URLs may not work", err)
 	}
 	return nil
+}
+
+func (s *objectStorage) ensurePublicReadPolicy(ctx context.Context) error {
+	_, err := s.client.GetBucketPolicy(ctx, s.bucket)
+	if err == nil {
+		return nil
+	}
+	policy := publicReadPolicy(s.bucket, specialistPhotoPrefix)
+	return setBucketPolicyWithRetry(ctx, s.client, s.bucket, policy)
 }
 
 func waitBucketExists(ctx context.Context, client *minio.Client, bucket string) (bool, error) {
