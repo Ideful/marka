@@ -35,10 +35,45 @@ make docker-up
 |--------|-----|
 | Сайт | http://&lt;IP&gt;:3000 |
 | API | http://&lt;IP&gt;:3001 |
-| Админка | http://&lt;IP&gt;:5173 |
+| Админка | http://&lt;IP&gt; (порт 80) |
 | MinIO | http://&lt;IP&gt;:9001 |
 
 Логи: `make docker-logs` · Остановка: `make docker-down`
+
+### Ошибка `429 Too Many Requests` (лимит Docker Hub)
+
+На сервере без авторизации в Docker Hub лимит скачивания быстро исчерпывается. Варианты:
+
+**1. Зеркало (рекомендуется для РФ)**
+
+```bash
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<'EOF'
+{
+  "registry-mirrors": ["https://docker.1ms.run"]
+}
+EOF
+sudo systemctl restart docker
+```
+
+Потом снова: `make docker-up`
+
+**2. Войти в Docker Hub** (бесплатный аккаунт даёт больший лимит)
+
+```bash
+docker login
+make docker-up
+```
+
+**3. Ручная загрузка через зеркало** (если п.1 не помог)
+
+```bash
+docker pull docker.1ms.run/library/golang:1.23-alpine && docker tag docker.1ms.run/library/golang:1.23-alpine golang:1.23-alpine
+docker pull docker.1ms.run/library/node:22-alpine && docker tag docker.1ms.run/library/node:22-alpine node:22-alpine
+docker pull docker.1ms.run/library/nginx:1.27-alpine && docker tag docker.1ms.run/library/nginx:1.27-alpine nginx:1.27-alpine
+docker pull docker.1ms.run/library/alpine:3.20 && docker tag docker.1ms.run/library/alpine:3.20 alpine:3.20
+make docker-up
+```
 
 ## Локальная разработка
 
