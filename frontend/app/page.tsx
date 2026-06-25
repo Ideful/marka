@@ -3,7 +3,9 @@ import { ServicesTeaser } from "@/components/home/ServicesTeaser";
 import { VacanciesTeaser } from "@/components/home/VacanciesTeaser";
 import { ContactsPanel } from "@/components/contacts/ContactsPanel";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { MarqueeBar } from "@/components/layout/MarqueeBar";
 import { DotNav } from "@/components/home/DotNav";
+import { fetchMarqueeText } from "@/lib/api/site-settings";
 import { salonConfig } from "@/lib/domain/salon-config";
 
 const SECTIONS = [
@@ -13,7 +15,8 @@ const SECTIONS = [
   { id: "contacts", label: "Контакты" },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const marqueeText = await fetchMarqueeText();
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BeautySalon",
@@ -62,6 +65,7 @@ export default function HomePage() {
       <VacanciesTeaser />
       <ContactsPanel />
       <SiteFooter />
+      <MarqueeBar text={marqueeText} />
     </>
   );
 }

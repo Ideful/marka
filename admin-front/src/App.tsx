@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 import { AdminLayout, type AdminSection } from "./components/AdminLayout";
+import { MarqueePage } from "./pages/MarqueePage";
 import { SpecialistsPage } from "./pages/SpecialistsPage";
 import { SubServicesPage } from "./pages/SubServicesPage";
 
@@ -77,6 +78,7 @@ export function App() {
     <AdminLayout section={section} onSectionChange={setSection} onLogout={handleLogout}>
       {section === "specialists" ? <SpecialistsPage /> : null}
       {section === "sub-services" ? <SubServicesPage /> : null}
+      {section === "marquee" ? <MarqueePage /> : null}
     </AdminLayout>
   );
 }

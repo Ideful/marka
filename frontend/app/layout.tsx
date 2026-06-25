@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/layout/SiteHeader";
-import { MarqueeBar } from "@/components/layout/MarqueeBar";
 import { CookieBanner } from "@/components/CookieBanner";
 import { salonConfig } from "@/lib/domain/salon-config";
 
@@ -45,7 +44,6 @@ export default function RootLayout({
       <body className="font-sans">
         <SiteHeader />
         <main>{children}</main>
-        <MarqueeBar />
         <CookieBanner />
       </body>
     </html>

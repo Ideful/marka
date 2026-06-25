@@ -55,5 +55,17 @@ func migrate(ctx context.Context, pool *pgxpool.Pool) error {
 	if err := migrateServicesCatalog(ctx, pool); err != nil {
 		return err
 	}
+	_, err = pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS site_settings (
+			key TEXT PRIMARY KEY,
+			value TEXT NOT NULL DEFAULT ''
+		);
+	`)
+	if err != nil {
+		return fmt.Errorf("migrate site_settings: %w", err)
+	}
+	if err := seedSiteSettings(ctx, pool); err != nil {
+		return fmt.Errorf("seed site_settings: %w", err)
+	}
 	return nil
 }

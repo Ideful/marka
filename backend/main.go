@@ -52,6 +52,9 @@ func main() {
 	subServices := &subServiceStore{pool: pool}
 	registerSubServiceRoutes(mux, subServices)
 
+	siteSettings := &siteSettingsStore{pool: pool}
+	registerSiteSettingsRoutes(mux, siteSettings)
+
 	addr := "0.0.0.0:" + port
 	log.Printf("marka-backend listening on http://%s", addr)
 	if err := http.ListenAndServe(addr, withCORS(mux)); err != nil {

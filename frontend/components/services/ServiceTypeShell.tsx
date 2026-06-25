@@ -31,20 +31,22 @@ export function ServiceTypeShell({ main, service, children }: Props) {
 
       {main.services.length > 0 ? (
         <nav
-          className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-xs font-medium uppercase tracking-wide text-ink md:text-sm"
+          className="flex flex-wrap items-baseline justify-center gap-x-[0.9rem] gap-y-3 text-center font-medium uppercase tracking-wide text-ink"
           aria-label="Типы услуг"
         >
           {main.services.map((item, index) => {
             const active = item.slug === service.slug;
             return (
-              <span key={item.slug} className="inline-flex items-center">
-                {index > 0 ? <span className="mx-1 text-ink/40">-</span> : null}
+              <span key={item.slug} className="inline-flex items-baseline">
+                {index > 0 ? (
+                  <span className="mx-[0.9rem] text-[0.9rem] leading-none text-ink/40">-</span>
+                ) : null}
                 <Link
                   href={`/services/${main.slug}/${item.slug}`}
-                  className={`border-b-2 pb-0.5 transition ${
+                  className={`border-b-2 transition ${
                     active
-                      ? "border-ink text-ink"
-                      : "border-transparent text-ink-muted hover:text-ink"
+                      ? "border-ink pb-1 text-[1.8rem] leading-tight text-ink"
+                      : "border-transparent pb-0.5 text-[0.9rem] text-ink-muted hover:border-ink/30 hover:text-ink"
                   }`}
                   aria-current={active ? "page" : undefined}
                 >
