@@ -284,9 +284,9 @@ export function SpecialistForm({ title, initial, onSubmit, onCancel }: Props) {
                         </label>
                       </div>
                       <input
-                        type="url"
+                        type="text"
                         value={item.photo_url}
-                        placeholder="Или вставьте URL"
+                        placeholder="Или вставьте URL (/marka/... или https://)"
                         disabled={busy}
                         onChange={(e) =>
                           updatePortfolio(index, { photo_url: e.target.value })
