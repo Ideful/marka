@@ -99,6 +99,9 @@ func (s *catalogStore) listServiceTypes(ctx context.Context, mainServiceID int, 
 		}
 	}
 
+	if out == nil {
+		out = []ServiceType{}
+	}
 	return out, nil
 }
 

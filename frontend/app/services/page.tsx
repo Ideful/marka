@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { fetchMainServices } from "@/lib/api/services";
+import { fetchMainServices, serviceDirectionHref } from "@/lib/api/services";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +31,7 @@ export default async function ServicesIndexPage() {
           Услуги и цены
         </h1>
         <p className="mt-4 max-w-2xl text-ink-muted">
-          Выберите направление — на странице раздела перечислены типы услуг и отдельные страницы с прайсом.
+          Выберите направление — откроется прайс с типами услуг.
         </p>
 
         {loadError ? (
@@ -40,17 +40,27 @@ export default async function ServicesIndexPage() {
           </p>
         ) : (
           <ul className="mt-12 grid gap-4 sm:grid-cols-2">
-            {categories.map((c) => (
-              <li key={c.slug}>
-                <Link
-                  href={`/services/${c.slug}`}
-                  className="flex flex-col rounded-2xl border border-ink/10 bg-white p-6 shadow-sm transition hover:border-accent/40 hover:shadow-md"
-                >
-                  <span className="text-lg font-semibold text-ink">{c.name}</span>
-                  <span className="mt-4 text-sm font-medium text-accent">Открыть →</span>
-                </Link>
-              </li>
-            ))}
+            {categories.map((c) => {
+              const href = c.services.length > 0 ? serviceDirectionHref(c) : null;
+              const cardClass =
+                "flex flex-col rounded-2xl border border-ink/10 bg-white p-6 shadow-sm transition hover:border-accent/40 hover:shadow-md";
+
+              return (
+                <li key={c.slug}>
+                  {href ? (
+                    <Link href={href} className={cardClass}>
+                      <span className="text-lg font-semibold text-ink">{c.name}</span>
+                      <span className="mt-4 text-sm font-medium text-accent">Открыть →</span>
+                    </Link>
+                  ) : (
+                    <div className={`${cardClass} opacity-60`}>
+                      <span className="text-lg font-semibold text-ink">{c.name}</span>
+                      <span className="mt-4 text-sm text-ink-muted">Скоро</span>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

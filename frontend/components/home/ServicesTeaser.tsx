@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { fetchMainServices } from "@/lib/api/services";
+import { fetchMainServices, serviceDirectionHref } from "@/lib/api/services";
 
 export async function ServicesTeaser() {
   let categories: Awaited<ReturnType<typeof fetchMainServices>> = [];
@@ -40,22 +40,33 @@ export async function ServicesTeaser() {
           <p className="text-ink-muted">Каталог услуг скоро появится.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((cat) => (
-              <Link
-                key={cat.slug}
-                href={`/services/${cat.slug}`}
-                className="group flex flex-col justify-between rounded-2xl border border-ink/10 bg-white p-6 shadow-sm transition hover:border-accent/40 hover:shadow-md"
-              >
-                <div className="flex flex-col gap-2">
-                  <p className="text-lg font-semibold text-ink group-hover:text-accent">
-                    {cat.name}
-                  </p>
-                </div>
-                <span className="mt-6 text-sm font-medium text-ink-muted group-hover:text-ink">
-                  Подробнее →
-                </span>
-              </Link>
-            ))}
+            {categories.map((cat) => {
+              const href = cat.services.length > 0 ? serviceDirectionHref(cat) : null;
+              const cardClass =
+                "group flex flex-col justify-between rounded-2xl border border-ink/10 bg-white p-6 shadow-sm transition hover:border-accent/40 hover:shadow-md";
+
+              if (!href) {
+                return (
+                  <div key={cat.slug} className={`${cardClass} opacity-60`}>
+                    <p className="text-lg font-semibold text-ink">{cat.name}</p>
+                    <span className="mt-6 text-sm text-ink-muted">Скоро</span>
+                  </div>
+                );
+              }
+
+              return (
+                <Link key={cat.slug} href={href} className={cardClass}>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-lg font-semibold text-ink group-hover:text-accent">
+                      {cat.name}
+                    </p>
+                  </div>
+                  <span className="mt-6 text-sm font-medium text-ink-muted group-hover:text-ink">
+                    Подробнее →
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

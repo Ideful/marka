@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { MainService, ServiceType } from "@/lib/api/services";
+import { serviceDirectionHref } from "@/lib/api/services";
 
 type Props = {
   main: MainService;
@@ -19,7 +20,7 @@ export function ServiceTypeShell({ main, service, children }: Props) {
           Услуги
         </Link>
         <span className="mx-1.5">-</span>
-        <Link href={`/services/${main.slug}`} className="hover:text-ink hover:underline">
+        <Link href={serviceDirectionHref(main)} className="hover:text-ink hover:underline">
           {main.name}
         </Link>
       </nav>

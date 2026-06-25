@@ -53,13 +53,33 @@ export function subServiceToPriceRow(sub: SubService): ServicePriceRow {
   };
 }
 
+function normalizeMainService(raw: MainService): MainService {
+  return {
+    ...raw,
+    services: Array.isArray(raw.services) ? raw.services : [],
+  };
+}
+
+/** Первый тип услуги в направлении (по sort_order из API). */
+export function firstServiceSlug(main: Pick<MainService, "services">): string | null {
+  const services = Array.isArray(main.services) ? main.services : [];
+  return services[0]?.slug ?? null;
+}
+
+/** Ссылка на страницу направления — сразу на первый тип услуги. */
+export function serviceDirectionHref(main: Pick<MainService, "slug" | "services">): string {
+  const first = firstServiceSlug(main);
+  if (first) return `/services/${main.slug}/${first}`;
+  return `/services/${main.slug}`;
+}
+
 export async function fetchMainServices(): Promise<MainService[]> {
   const base = getApiBaseUrl();
   const res = await fetch(`${base}/main-services`, { cache: "no-store" });
   if (!res.ok) throw new Error(`API /main-services: ${res.status}`);
   const data: unknown = await res.json();
   if (!Array.isArray(data)) throw new Error("API /main-services: expected array");
-  return data as MainService[];
+  return (data as MainService[]).map(normalizeMainService);
 }
 
 export async function fetchMainService(slug: string): Promise<MainService | null> {
@@ -67,7 +87,7 @@ export async function fetchMainService(slug: string): Promise<MainService | null
   const res = await fetch(`${base}/main-services/${slug}`, { cache: "no-store" });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`API /main-services/${slug}: ${res.status}`);
-  return (await res.json()) as MainService;
+  return normalizeMainService((await res.json()) as MainService);
 }
 
 export async function fetchServiceType(
