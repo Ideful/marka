@@ -1,21 +1,21 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { formatLogTimestamp } from "@/lib/logger";
+import { NextResponse } from "next/server";
 
-/**
- * В dev в терминале Next по умолчанию печатается строка без даты (`GET /path 200 in …ms`).
- * Добавляем свою строку с датой/временем; встроенный формат Next отключить нельзя.
- */
+const minioOrigin = (process.env.MINIO_INTERNAL_URL ?? "http://localhost:9000").replace(
+  /\/$/,
+  "",
+);
+
 export function middleware(request: NextRequest) {
-  if (process.env.NODE_ENV === "development") {
-    const path = `${request.nextUrl.pathname}${request.nextUrl.search}`;
-    console.log(`[${formatLogTimestamp()}] ${request.method} ${path}`);
+  const { pathname } = request.nextUrl;
+  if (!pathname.startsWith("/marka/")) {
+    return NextResponse.next();
   }
-  return NextResponse.next();
+
+  const target = new URL(`${pathname}${request.nextUrl.search}`, `${minioOrigin}/`);
+  return NextResponse.rewrite(target);
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:webm|mp4|png|jpg|jpeg|gif|webp|svg|ico|woff2?)).*)",
-  ],
+  matcher: "/marka/:path*",
 };

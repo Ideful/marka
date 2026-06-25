@@ -70,6 +70,7 @@ services:
       PORT: "3000"
       HOSTNAME: 0.0.0.0
       API_URL: http://backend:3001
+      MINIO_INTERNAL_URL: http://minio:9000
     depends_on:
       backend:
         condition: service_started
