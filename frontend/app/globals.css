@@ -19,3 +19,18 @@ body {
     text-wrap: balance;
   }
 }
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee-scroll linear infinite;
+  animation-duration: var(--marquee-duration, 120s);
+  will-change: transform;
+}

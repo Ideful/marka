@@ -1,3 +1,6 @@
+/** Полный цикл прокрутки одного сегмента (чем больше — тем медленнее). */
+const MARQUEE_DURATION_S = 120;
+
 type Props = {
   text: string;
 };
@@ -15,7 +18,14 @@ export function MarqueeBar({ text }: Props) {
       aria-hidden
     >
       <div className="flex h-12 items-center">
-        <div className="animate-marquee flex w-max shrink-0 whitespace-nowrap font-semibold uppercase tracking-[0.35em]">
+        <div
+          className="marquee-track flex w-max shrink-0 whitespace-nowrap font-semibold uppercase tracking-[0.35em]"
+          style={
+            {
+              "--marquee-duration": `${MARQUEE_DURATION_S}s`,
+            } as React.CSSProperties
+          }
+        >
           <span className="px-2">{line}</span>
           <span className="px-2">{line}</span>
         </div>
