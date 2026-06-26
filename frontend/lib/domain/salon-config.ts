@@ -25,10 +25,13 @@ export class SalonConfig {
   readonly telegramUrl = "https://t.me/Marque_arena";
   readonly instagramUrl = "https://www.instagram.com/marque_arena";
 
-  /** Задайте `NEXT_PUBLIC_BOOKING_URL` или используйте страницу контактов */
+  readonly yclientsUrl =
+    "https://n717666.yclients.com/company/677152/personal/menu?o=";
+
+  /** Задайте `NEXT_PUBLIC_BOOKING_URL` или используется YClients */
   get bookingUrl(): string {
     const env = process.env.NEXT_PUBLIC_BOOKING_URL;
-    return env && env.length > 0 ? env : "/contacts";
+    return env && env.length > 0 ? env : this.yclientsUrl;
   }
 
   siteUrl(): string {

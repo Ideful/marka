@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { MessengerLinks } from "@/components/contacts/MessengerLinks";
 import { VACANCIES } from "@/data/vacancies";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { salonConfig } from "@/lib/domain/salon-config";
@@ -36,21 +36,8 @@ export default function VacanciesPage() {
             >
               <h2 className="text-xl font-semibold text-ink">{v.title}</h2>
               <p className="mt-3 text-ink-muted">{v.summary}</p>
-              <div className="mt-6 flex flex-wrap gap-4">
-                <Link
-                  href={salonConfig.telegramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-medium text-accent underline-offset-4 hover:underline"
-                >
-                  Написать в Telegram
-                </Link>
-                <Link
-                  href={`tel:${salonConfig.phoneTel}`}
-                  className="text-sm font-medium text-ink-muted underline-offset-4 hover:text-ink hover:underline"
-                >
-                  Позвонить
-                </Link>
+              <div className="mt-6">
+                <MessengerLinks />
               </div>
             </section>
           ))}

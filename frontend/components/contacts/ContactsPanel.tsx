@@ -1,6 +1,6 @@
 import { salonConfig } from "@/lib/domain/salon-config";
 import { YandexMap } from "@/components/maps/YandexMap";
-import { ButtonLink } from "@/components/ui/ButtonLink";
+import { MessengerLinks } from "@/components/contacts/MessengerLinks";
 
 type Props = {
   /** Если false — без верхнего заголовка секции (на странице «Контакты») */
@@ -44,33 +44,7 @@ export function ContactsPanel({ showEyebrow = true }: Props) {
           </a>
         </div>
 
-        <div className="flex flex-col items-center gap-4 md:flex-row md:justify-center md:gap-6">
-          <ButtonLink href={c.whatsappUrl} variant="outline" size="lg" target="_blank" rel="noopener noreferrer">
-            WhatsApp
-          </ButtonLink>
-          <ButtonLink href={c.telegramUrl} variant="outline" size="lg" target="_blank" rel="noopener noreferrer">
-            Telegram
-          </ButtonLink>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
-          <a
-            href={c.instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-ink-muted underline-offset-4 hover:text-ink hover:underline"
-          >
-            Инстаграм
-          </a>
-          <a
-            href={c.yandexMapExternalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-ink-muted underline-offset-4 hover:text-ink hover:underline"
-          >
-            Яндекс-карты
-          </a>
-        </div>
+        <MessengerLinks />
       </div>
     </section>
   );

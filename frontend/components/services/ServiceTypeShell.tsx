@@ -45,7 +45,7 @@ export function ServiceTypeShell({ main, service, children }: Props) {
                   href={`/services/${main.slug}/${item.slug}`}
                   className={`border-b-2 transition ${
                     active
-                      ? "border-ink pb-1 text-[1.8rem] leading-tight text-ink"
+                      ? "border-ink pb-1 text-[1.5rem] leading-tight text-ink"
                       : "border-transparent pb-0.5 text-[0.9rem] text-ink-muted hover:border-ink/30 hover:text-ink"
                   }`}
                   aria-current={active ? "page" : undefined}
