@@ -1,4 +1,5 @@
 import { HeroSection } from "@/components/home/HeroSection";
+import { YandexRatingBadge } from "@/components/home/YandexRatingBadge";
 import { PhilosophySection } from "@/components/home/PhilosophySection";
 import { ServicesTeaser } from "@/components/home/ServicesTeaser";
 import { PortfolioTeaser } from "@/components/home/PortfolioTeaser";
@@ -64,6 +65,7 @@ export default async function HomePage() {
       />
       <DotNav sections={SECTIONS} />
       <HeroSection />
+      <YandexRatingBadge />
       <PhilosophySection />
       <ServicesTeaser />
       <PortfolioTeaser />

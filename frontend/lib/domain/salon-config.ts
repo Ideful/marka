@@ -31,6 +31,10 @@ export class SalonConfig {
 
   readonly yandexMapExternalUrl = "https://yandex.ru/maps/-/CLdkIQkg";
 
+  /** Виджет рейтинга Яндекс.Справочника */
+  readonly yandexRatingBadgeEmbedSrc =
+    "https://yandex.ru/sprav/widget/rating-badge/170004973372?type=award";
+
   readonly whatsappUrl = "https://wa.me/79859990188";
   readonly telegramUrl = "https://t.me/Marque_arena";
   readonly instagramUrl = "https://www.instagram.com/marque_arena";
