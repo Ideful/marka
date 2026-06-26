@@ -1,5 +1,8 @@
 import { HeroSection } from "@/components/home/HeroSection";
+import { PhilosophySection } from "@/components/home/PhilosophySection";
 import { ServicesTeaser } from "@/components/home/ServicesTeaser";
+import { PortfolioTeaser } from "@/components/home/PortfolioTeaser";
+import { GiftCertificateTeaser } from "@/components/home/GiftCertificateTeaser";
 import { VacanciesTeaser } from "@/components/home/VacanciesTeaser";
 import { ContactsPanel } from "@/components/contacts/ContactsPanel";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -61,7 +64,10 @@ export default async function HomePage() {
       />
       <DotNav sections={SECTIONS} />
       <HeroSection />
+      <PhilosophySection />
       <ServicesTeaser />
+      <PortfolioTeaser />
+      <GiftCertificateTeaser />
       <VacanciesTeaser />
       <ContactsPanel />
       <SiteFooter />
