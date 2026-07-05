@@ -46,6 +46,10 @@ func (s *siteSettingsStore) setMarquee(ctx context.Context, text string) (marque
 func registerSiteSettingsRoutes(mux *http.ServeMux, store *siteSettingsStore) {
 	mux.HandleFunc("GET /site-settings/marquee", store.handleGetMarquee)
 	mux.HandleFunc("PUT /site-settings/marquee", store.handlePutMarquee)
+	mux.HandleFunc("GET /site-settings/homepage-portfolio", store.handleGetHomepagePortfolio)
+	mux.HandleFunc("PUT /site-settings/homepage-portfolio", store.handlePutHomepagePortfolio)
+	mux.HandleFunc("GET /site-settings/gift-certificate", store.handleGetGiftCertificate)
+	mux.HandleFunc("PUT /site-settings/gift-certificate", store.handlePutGiftCertificate)
 }
 
 func (s *siteSettingsStore) handleGetMarquee(w http.ResponseWriter, r *http.Request) {

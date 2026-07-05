@@ -1,7 +1,12 @@
 import type { ReactNode } from "react";
 import "./AdminLayout.css";
 
-export type AdminSection = "specialists" | "sub-services" | "marquee";
+export type AdminSection =
+  | "specialists"
+  | "sub-services"
+  | "marquee"
+  | "homepage-portfolio"
+  | "gift-certificate";
 
 type NavItem = {
   id: AdminSection;
@@ -13,6 +18,8 @@ const NAV: NavItem[] = [
   { id: "specialists", label: "Специалисты", enabled: true },
   { id: "sub-services", label: "Подуслуги", enabled: true },
   { id: "marquee", label: "Бегущая строка", enabled: true },
+  { id: "homepage-portfolio", label: "Портфолио", enabled: true },
+  { id: "gift-certificate", label: "Сертификат", enabled: true },
 ];
 
 type Props = {

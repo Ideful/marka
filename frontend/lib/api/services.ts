@@ -121,5 +121,4 @@ export const HAIR_SERVICE_SLUGS = [
   "okrashivanie",
   "barber",
   "uhod-volos",
-  "transform",
 ] as const;

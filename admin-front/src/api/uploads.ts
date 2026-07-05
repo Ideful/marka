@@ -8,10 +8,18 @@ export type UploadPhotoResponse = {
 };
 
 export async function uploadSpecialistPhoto(file: File): Promise<UploadPhotoResponse> {
+  return uploadPhoto(file, "/uploads/specialist-photo");
+}
+
+export async function uploadSitePhoto(file: File): Promise<UploadPhotoResponse> {
+  return uploadPhoto(file, "/uploads/site-photo");
+}
+
+async function uploadPhoto(file: File, path: string): Promise<UploadPhotoResponse> {
   const form = new FormData();
   form.append("file", file);
 
-  const res = await fetch(`${API_BASE}/uploads/specialist-photo`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
     body: form,
   });

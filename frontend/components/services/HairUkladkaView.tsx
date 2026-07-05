@@ -49,7 +49,7 @@ function PriceList({ row }: { row: ServicePriceRow }) {
 
   if (isCompactPriceRow(row.name)) {
     return (
-      <div className="space-y-2 py-2 text-center text-sm">
+      <div className="space-y-2 py-2 text-center text-sm" data-service-price-table>
         {items.map(({ tier, price }) => (
           <p key={tier} className="text-ink underline underline-offset-4">
             {SPECIALIST_TIER_LABELS[tier]} {formatPriceRub(price)}
@@ -60,7 +60,7 @@ function PriceList({ row }: { row: ServicePriceRow }) {
   }
 
   return (
-    <ul className="divide-y divide-ink/10 border-y border-ink/10">
+    <ul className="divide-y divide-ink/10 border-y border-ink/10" data-service-price-table>
       {TIER_DISPLAY_ORDER.map((tier) => {
         const price = row.prices?.female?.[tier] ?? 0;
         if (price <= 0) return null;
@@ -85,7 +85,7 @@ function UkladkaCard({ row }: { row: ServicePriceRow }) {
 
   return (
     <article className="space-y-5">
-      <div className="rounded-xl bg-ink/45 px-4 py-3 text-center text-sm font-medium uppercase tracking-wide text-white">
+      <div className="rounded-xl bg-ink-muted px-4 py-3 text-center text-sm font-medium uppercase tracking-wide text-white">
         {row.name}
       </div>
 
@@ -101,15 +101,6 @@ function UkladkaCard({ row }: { row: ServicePriceRow }) {
           </span>
         </span>
       </p>
-
-      <Link
-        href={BOOKING_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block rounded-xl bg-[#121417] px-6 py-4 text-center text-xl font-medium uppercase tracking-wide text-white transition hover:bg-[#121417]/90"
-      >
-        Записаться
-      </Link>
     </article>
   );
 }
@@ -132,7 +123,7 @@ export function HairUkladkaView({ main, service, rows }: Props) {
         href={BOOKING_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="block rounded-xl bg-[#121417] px-6 py-4 text-center text-lg font-medium uppercase leading-tight tracking-wide text-white transition hover:bg-[#121417]/90 md:text-xl"
+        className="block rounded-xl bg-ink-muted px-6 py-4 text-center text-lg font-medium uppercase leading-tight tracking-wide text-white transition hover:bg-ink-muted/90 md:text-xl"
       >
         Бесплатная консультация со специалистом
       </Link>

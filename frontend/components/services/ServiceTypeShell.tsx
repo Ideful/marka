@@ -8,7 +8,67 @@ type Props = {
   children: React.ReactNode;
 };
 
+const FIRST_ROW_COUNT = 2;
+
+function ServiceTypeLink({
+  item,
+  active,
+  mainSlug,
+}: {
+  item: ServiceType;
+  active: boolean;
+  mainSlug: string;
+}) {
+  return (
+    <Link
+      href={`/services/${mainSlug}/${item.slug}`}
+      className={
+        active
+          ? "text-lg font-bold italic text-ink underline decoration-2 underline-offset-[5px] sm:text-xl"
+          : "text-base font-normal text-ink-muted transition hover:text-ink sm:text-lg"
+      }
+      aria-current={active ? "page" : undefined}
+    >
+      {item.name}
+    </Link>
+  );
+}
+
+function ServiceTypeRow({
+  items,
+  mainSlug,
+  activeSlug,
+}: {
+  items: ServiceType[];
+  mainSlug: string;
+  activeSlug: string;
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <div className="leading-normal">
+      {items.map((item, index) => (
+        <span key={item.slug} className="inline">
+          {index > 0 ? (
+            <span className="px-1 text-ink/40" aria-hidden>
+              -
+            </span>
+          ) : null}
+          <ServiceTypeLink
+            item={item}
+            active={item.slug === activeSlug}
+            mainSlug={mainSlug}
+          />
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export function ServiceTypeShell({ main, service, children }: Props) {
+  const firstRow = main.services.slice(0, FIRST_ROW_COUNT);
+  const secondRow = main.services.slice(FIRST_ROW_COUNT);
+
   return (
     <section className="mx-auto max-w-lg space-y-8">
       <nav className="text-center text-xs text-ink-muted" aria-label="Хлебные крошки">
@@ -31,30 +91,11 @@ export function ServiceTypeShell({ main, service, children }: Props) {
 
       {main.services.length > 0 ? (
         <nav
-          className="flex flex-wrap items-baseline justify-center gap-x-[0.9rem] gap-y-3 text-center font-medium uppercase tracking-wide text-ink"
+          className="mx-auto flex max-w-xl flex-col gap-2 text-center uppercase tracking-wide"
           aria-label="Типы услуг"
         >
-          {main.services.map((item, index) => {
-            const active = item.slug === service.slug;
-            return (
-              <span key={item.slug} className="inline-flex items-baseline">
-                {index > 0 ? (
-                  <span className="mx-[0.9rem] text-[0.9rem] leading-none text-ink/40">-</span>
-                ) : null}
-                <Link
-                  href={`/services/${main.slug}/${item.slug}`}
-                  className={`border-b-2 transition ${
-                    active
-                      ? "border-ink pb-1 text-[1.5rem] leading-tight text-ink"
-                      : "border-transparent pb-0.5 text-[0.9rem] text-ink-muted hover:border-ink/30 hover:text-ink"
-                  }`}
-                  aria-current={active ? "page" : undefined}
-                >
-                  {item.name}
-                </Link>
-              </span>
-            );
-          })}
+          <ServiceTypeRow items={firstRow} mainSlug={main.slug} activeSlug={service.slug} />
+          <ServiceTypeRow items={secondRow} mainSlug={main.slug} activeSlug={service.slug} />
         </nav>
       ) : null}
 

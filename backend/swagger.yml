@@ -17,6 +17,8 @@ tags:
     description: Специалисты салона
   - name: uploads
     description: Загрузка файлов (MinIO)
+  - name: site-settings
+    description: Настройки сайта (главная, бегущая строка)
 
 paths:
   /main-services:
@@ -233,6 +235,127 @@ paths:
         "400":
           description: Некорректный файл
 
+        "400":
+          description: Некорректный файл
+
+  /uploads/site-photo:
+    post:
+      operationId: uploadSitePhoto
+      summary: Загрузить фото для блоков главной (портфолио, сертификат)
+      tags:
+        - uploads
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: URL загруженного файла
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadPhotoResponse"
+        "400":
+          description: Некорректный файл
+
+  /site-settings/marquee:
+    get:
+      operationId: getMarqueeSettings
+      summary: Текст бегущей строки
+      tags:
+        - site-settings
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarqueeSettings"
+    put:
+      operationId: updateMarqueeSettings
+      summary: Обновить текст бегущей строки
+      tags:
+        - site-settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarqueeSettings"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarqueeSettings"
+
+  /site-settings/homepage-portfolio:
+    get:
+      operationId: getHomepagePortfolio
+      summary: Портфолио на главной
+      tags:
+        - site-settings
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomepagePortfolioSettings"
+    put:
+      operationId: updateHomepagePortfolio
+      summary: Обновить портфолио на главной
+      tags:
+        - site-settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HomepagePortfolioSettings"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomepagePortfolioSettings"
+
+  /site-settings/gift-certificate:
+    get:
+      operationId: getGiftCertificateSettings
+      summary: Подарочный сертификат (главная и страница)
+      tags:
+        - site-settings
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GiftCertificateSettings"
+    put:
+      operationId: updateGiftCertificateSettings
+      summary: Обновить подарочный сертификат
+      tags:
+        - site-settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GiftCertificateSettings"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GiftCertificateSettings"
+
   /specialists:
     get:
       operationId: listSpecialists
@@ -422,6 +545,32 @@ components:
         key:
           type: string
           example: specialists/uuid.jpg
+
+    MarqueeSettings:
+      type: object
+      properties:
+        text:
+          type: string
+
+    HomepagePortfolioSettings:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Portfolio"
+
+    GiftCertificateSettings:
+      type: object
+      properties:
+        photo_url:
+          type: string
+        teaser_text:
+          type: string
+          description: Текст блока на главной
+        page_text:
+          type: string
+          description: Текст на странице /certificates
 
     MainService:
       type: object

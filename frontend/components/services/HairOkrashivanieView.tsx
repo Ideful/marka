@@ -27,10 +27,10 @@ function LengthPriceTable({ prices }: { prices: LengthPrices }) {
   if (!lengthPricesHasValue(prices)) return null;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-ink/15">
+    <div className="overflow-hidden rounded-xl border border-ink/15" data-service-price-table>
       <table className="w-full text-center text-sm">
         <thead>
-          <tr className="bg-ink/45 text-white">
+          <tr className="bg-ink-muted text-white">
             {HAIR_LENGTH_KEYS.map((key) => (
               <th key={key} className="px-3 py-3 font-medium uppercase tracking-wide">
                 {HAIR_LENGTH_LABELS[key]}
@@ -101,7 +101,7 @@ export function HairOkrashivanieView({ main, service, rows }: Props) {
           href={BOOKING_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="block rounded-xl bg-[#121417] px-6 py-4 text-center text-lg font-medium uppercase leading-tight tracking-wide text-white transition hover:bg-[#121417]/90 md:text-xl"
+          className="block rounded-xl bg-ink-muted px-6 py-4 text-center text-lg font-medium uppercase leading-tight tracking-wide text-white transition hover:bg-ink-muted/90 md:text-xl"
         >
           Бесплатная консультация со специалистом
         </Link>

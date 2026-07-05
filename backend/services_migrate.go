@@ -39,7 +39,27 @@ func migrateServicesCatalog(ctx context.Context, pool *pgxpool.Pool) error {
 		return fmt.Errorf("migrate services tables: %w", err)
 	}
 
+	if err := migrateRemoveTransformServiceType(ctx, pool); err != nil {
+		return err
+	}
+
 	return seedServicesCatalog(ctx, pool)
+}
+
+// migrateRemoveTransformServiceType удаляет устаревший тип услуги «Трансформация структуры».
+func migrateRemoveTransformServiceType(ctx context.Context, pool *pgxpool.Pool) error {
+	tag, err := pool.Exec(ctx, `
+		DELETE FROM service_types
+		WHERE main_service_id = (SELECT id FROM main_services WHERE slug = 'hair')
+		  AND (slug = 'transform' OR name ILIKE 'трансформация структуры')
+	`)
+	if err != nil {
+		return fmt.Errorf("migrate remove transform service_type: %w", err)
+	}
+	if tag.RowsAffected() > 0 {
+		fmt.Printf("migrate: removed %d transform service_type row(s)\n", tag.RowsAffected())
+	}
+	return nil
 }
 
 func seedServicesCatalog(ctx context.Context, pool *pgxpool.Pool) error {
@@ -77,7 +97,6 @@ func seedServicesCatalog(ctx context.Context, pool *pgxpool.Pool) error {
 		{"okrashivanie", "Окрашивание", "", 3},
 		{"barber", "Барбер", "", 4},
 		{"uhod-volos", "Уход для волос", "", 5},
-		{"transform", "Трансформация структуры", "", 6},
 	}
 
 	var hairID int

@@ -9,7 +9,7 @@ import { ContactsPanel } from "@/components/contacts/ContactsPanel";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { MarqueeBar } from "@/components/layout/MarqueeBar";
 import { DotNav } from "@/components/home/DotNav";
-import { fetchMarqueeText } from "@/lib/api/site-settings";
+import { fetchMarqueeText, fetchHomepagePortfolio, fetchGiftCertificate } from "@/lib/api/site-settings";
 import { salonConfig } from "@/lib/domain/salon-config";
 
 const SECTIONS = [
@@ -20,7 +20,11 @@ const SECTIONS = [
 ];
 
 export default async function HomePage() {
-  const marqueeText = await fetchMarqueeText();
+  const [marqueeText, homepagePortfolio, giftCertificate] = await Promise.all([
+    fetchMarqueeText(),
+    fetchHomepagePortfolio(),
+    fetchGiftCertificate(),
+  ]);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BeautySalon",
@@ -68,8 +72,8 @@ export default async function HomePage() {
       <YandexRatingBadge />
       <PhilosophySection />
       <ServicesTeaser />
-      <PortfolioTeaser />
-      <GiftCertificateTeaser />
+      <PortfolioTeaser items={homepagePortfolio.items} />
+      <GiftCertificateTeaser settings={giftCertificate} />
       <VacanciesTeaser />
       <ContactsPanel />
       <SiteFooter />

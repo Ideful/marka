@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { salonConfig } from "@/lib/domain/salon-config";
+import { useBookingButtonHighlight } from "@/lib/use-booking-button-highlight";
 
 const links = [
   { href: "/services", label: "Услуги" },
@@ -15,6 +16,7 @@ const links = [
 
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const bookingHighlight = useBookingButtonHighlight();
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -73,7 +75,11 @@ export function SiteHeader() {
               href={salonConfig.bookingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-full bg-ink px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-white hover:bg-ink/85"
+              className={`rounded-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-white ${
+                bookingHighlight
+                  ? "booking-btn-shimmer"
+                  : "bg-ink hover:bg-ink/85"
+              }`}
             >
               Записаться
             </Link>

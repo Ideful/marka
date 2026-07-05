@@ -66,10 +66,10 @@ export function ServiceTypeView({ main, service, rows }: Props) {
       {rows.length === 0 ? (
         <p className="text-center text-ink-muted">Прайс для этого типа услуг скоро появится.</p>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-ink/15">
+        <div className="overflow-hidden rounded-xl border border-ink/15" data-service-price-table>
           <table className="w-full text-center text-sm">
             <thead>
-              <tr className="bg-ink/45 text-white">
+              <tr className="bg-ink-muted text-white">
                 <th className="px-4 py-3 font-medium uppercase tracking-wide">Женская</th>
                 <th className="px-4 py-3 font-medium uppercase tracking-wide">Мужская</th>
               </tr>
@@ -102,16 +102,7 @@ export function ServiceTypeView({ main, service, rows }: Props) {
           href={BOOKING_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="block rounded-xl bg-[#121417] px-6 py-4 text-center text-xl font-medium uppercase tracking-wide text-white transition hover:bg-[#121417]/90 md:text-2xl"
-        >
-          Записаться
-        </Link>
-
-        <Link
-          href={BOOKING_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block rounded-xl bg-[#121417] px-6 py-4 text-center text-lg font-medium uppercase leading-tight tracking-wide text-white transition hover:bg-[#121417]/90 md:text-xl"
+          className="block rounded-xl bg-ink-muted px-6 py-4 text-center text-lg font-medium uppercase leading-tight tracking-wide text-white transition hover:bg-ink-muted/90 md:text-xl"
         >
           Бесплатная консультация со специалистом
         </Link>

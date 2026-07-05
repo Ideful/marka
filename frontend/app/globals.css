@@ -34,3 +34,25 @@ body {
   animation-duration: var(--marquee-duration, 120s);
   will-change: transform;
 }
+
+@keyframes booking-gradient-shift {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+.booking-btn-shimmer {
+  background: linear-gradient(
+    110deg,
+    #1a1a1a 0%,
+    #1a1a1a 32%,
+    #c9a962 50%,
+    #1a1a1a 68%,
+    #1a1a1a 100%
+  );
+  background-size: 220% 100%;
+  animation: booking-gradient-shift 2.8s ease-in-out 1 forwards;
+}

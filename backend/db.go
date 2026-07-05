@@ -67,5 +67,8 @@ func migrate(ctx context.Context, pool *pgxpool.Pool) error {
 	if err := seedSiteSettings(ctx, pool); err != nil {
 		return fmt.Errorf("seed site_settings: %w", err)
 	}
+	if err := seedHomepageContent(ctx, pool); err != nil {
+		return fmt.Errorf("seed homepage content: %w", err)
+	}
 	return nil
 }

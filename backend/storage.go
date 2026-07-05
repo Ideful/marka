@@ -18,7 +18,10 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
-const specialistPhotoPrefix = "specialists/"
+const (
+	specialistPhotoPrefix = "specialists/"
+	sitePhotoPrefix       = "site/"
+)
 
 var allowedImageTypes = map[string]bool{
 	"image/jpeg": true,
@@ -96,11 +99,7 @@ func (s *objectStorage) ensureBucket(ctx context.Context) error {
 }
 
 func (s *objectStorage) ensurePublicReadPolicy(ctx context.Context) error {
-	_, err := s.client.GetBucketPolicy(ctx, s.bucket)
-	if err == nil {
-		return nil
-	}
-	policy := publicReadPolicy(s.bucket, specialistPhotoPrefix)
+	policy := publicReadPolicyMulti(s.bucket, specialistPhotoPrefix, sitePhotoPrefix)
 	return setBucketPolicyWithRetry(ctx, s.client, s.bucket, policy)
 }
 
@@ -123,16 +122,20 @@ func waitBucketExists(ctx context.Context, client *minio.Client, bucket string) 
 	return false, last
 }
 
-func publicReadPolicy(bucket, prefix string) string {
+func publicReadPolicyMulti(bucket string, prefixes ...string) string {
+	resources := make([]string, len(prefixes))
+	for i, prefix := range prefixes {
+		resources[i] = fmt.Sprintf(`"arn:aws:s3:::%s/%s*"`, bucket, prefix)
+	}
 	return fmt.Sprintf(`{
   "Version": "2012-10-17",
   "Statement": [{
     "Effect": "Allow",
     "Principal": {"AWS": ["*"]},
     "Action": ["s3:GetObject"],
-    "Resource": ["arn:aws:s3:::%s/%s*"]
+    "Resource": [%s]
   }]
-}`, bucket, prefix)
+}`, strings.Join(resources, ", "))
 }
 
 func setBucketPolicyWithRetry(ctx context.Context, client *minio.Client, bucket, policy string) error {
@@ -164,9 +167,18 @@ func (s *objectStorage) publicURL(objectKey string) string {
 
 func (s *objectStorage) registerRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /uploads/specialist-photo", s.handleUploadSpecialistPhoto)
+	mux.HandleFunc("POST /uploads/site-photo", s.handleUploadSitePhoto)
 }
 
 func (s *objectStorage) handleUploadSpecialistPhoto(w http.ResponseWriter, r *http.Request) {
+	s.handleUploadPhoto(w, r, specialistPhotoPrefix)
+}
+
+func (s *objectStorage) handleUploadSitePhoto(w http.ResponseWriter, r *http.Request) {
+	s.handleUploadPhoto(w, r, sitePhotoPrefix)
+}
+
+func (s *objectStorage) handleUploadPhoto(w http.ResponseWriter, r *http.Request, prefix string) {
 	const maxSize = 6 << 20
 	if err := r.ParseMultipartForm(maxSize); err != nil {
 		writeAPIError(w, http.StatusBadRequest, "file too large or invalid form")
@@ -197,7 +209,7 @@ func (s *objectStorage) handleUploadSpecialistPhoto(w http.ResponseWriter, r *ht
 		return
 	}
 
-	objectKey := specialistPhotoPrefix + uuid.New().String() + extForMIME(detected)
+	objectKey := prefix + uuid.New().String() + extForMIME(detected)
 	rest, err := io.ReadAll(io.LimitReader(file, maxSize-int64(len(sniff))+1))
 	if err != nil {
 		writeAPIError(w, http.StatusBadRequest, "cannot read file")

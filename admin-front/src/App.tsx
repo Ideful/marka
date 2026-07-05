@@ -2,6 +2,8 @@ import { useState } from "react";
 import "./App.css";
 import { AdminLayout, type AdminSection } from "./components/AdminLayout";
 import { MarqueePage } from "./pages/MarqueePage";
+import { HomepagePortfolioPage } from "./pages/HomepagePortfolioPage";
+import { GiftCertificatePage } from "./pages/GiftCertificatePage";
 import { SpecialistsPage } from "./pages/SpecialistsPage";
 import { SubServicesPage } from "./pages/SubServicesPage";
 
@@ -79,6 +81,8 @@ export function App() {
       {section === "specialists" ? <SpecialistsPage /> : null}
       {section === "sub-services" ? <SubServicesPage /> : null}
       {section === "marquee" ? <MarqueePage /> : null}
+      {section === "homepage-portfolio" ? <HomepagePortfolioPage /> : null}
+      {section === "gift-certificate" ? <GiftCertificatePage /> : null}
     </AdminLayout>
   );
 }
