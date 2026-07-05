@@ -10,9 +10,9 @@ servers:
 
 tags:
   - name: services
-    description: Категории услуг
-  - name: sub-services
-    description: Позиции прайса (подуслуги)
+    description: Каталог услуг
+  - name: prices
+    description: Цены (услуги в разделе)
   - name: specialists
     description: Специалисты салона
   - name: uploads
@@ -24,7 +24,7 @@ paths:
   /main-services:
     get:
       operationId: listMainServices
-      summary: Каталог — все направления с типами услуг
+      summary: Каталог — все направления с разделами
       tags:
         - services
       responses:
@@ -40,7 +40,7 @@ paths:
   /main-services/{slug}:
     get:
       operationId: getMainService
-      summary: Направление с типами услуг и подуслугами
+      summary: Направление с разделами и услугами
       tags:
         - services
       parameters:
@@ -58,10 +58,10 @@ paths:
         "404":
           description: Не найдено
 
-  /main-services/{slug}/services/{serviceSlug}:
+  /main-services/{slug}/sections/{sectionSlug}:
     get:
-      operationId: getServiceType
-      summary: Тип услуги с подуслугами (прайс)
+      operationId: getSection
+      summary: Раздел с услугами (прайс)
       tags:
         - services
       parameters:
@@ -70,7 +70,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: serviceSlug
+        - name: sectionSlug
           in: path
           required: true
           schema:
@@ -80,18 +80,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ServiceType"
+                $ref: "#/components/schemas/Section"
         "404":
           description: Не найдено
 
-  /sub-services:
+  /prices:
     get:
-      operationId: listSubServices
-      summary: Подуслуги по service_type_id
+      operationId: listServices
+      summary: Услуги по section_id
       tags:
-        - sub-services
+        - prices
       parameters:
-        - name: service_type_id
+        - name: section_id
           in: query
           required: true
           schema:
@@ -103,24 +103,24 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/SubService"
+                  $ref: "#/components/schemas/Service"
     post:
-      operationId: createSubService
-      summary: Создать подуслугу
+      operationId: createService
+      summary: Создать услугу
       tags:
-        - sub-services
+        - prices
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SubServiceInput"
+              $ref: "#/components/schemas/ServiceInput"
       responses:
         "201":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SubService"
+                $ref: "#/components/schemas/Service"
 
   /services:
     get:
@@ -139,12 +139,12 @@ paths:
                 items:
                   $ref: "#/components/schemas/LegacyService"
 
-  /sub-services/{id}:
+  /prices/{id}:
     get:
-      operationId: getSubService
-      summary: Подуслуга по id
+      operationId: getService
+      summary: Услуга по id
       tags:
-        - sub-services
+        - prices
       parameters:
         - name: id
           in: path
@@ -156,19 +156,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SubService"
+                $ref: "#/components/schemas/Service"
         "404":
           description: Не найдено
     put:
-      operationId: updateSubServiceById
-      summary: Обновить подуслугу по id
+      operationId: updateServiceById
+      summary: Обновить услугу по id
       tags:
-        - sub-services
+        - prices
       parameters:
         - name: id
           in: path
           required: true
-          description: Идентификатор подуслуги
+          description: Идентификатор услуги
           schema:
             type: integer
             format: int64
@@ -178,23 +178,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SubServiceInput"
+              $ref: "#/components/schemas/ServiceInput"
       responses:
         "200":
-          description: Обновлённая подуслуга
+          description: Обновлённая услуга
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SubService"
+                $ref: "#/components/schemas/Service"
         "400":
           description: Некорректное тело запроса
         "404":
-          description: Подуслуга с таким id не найдена
+          description: Услуга с таким id не найдена
     delete:
-      operationId: deleteSubService
-      summary: Удалить подуслугу
+      operationId: deleteService
+      summary: Удалить услугу
       tags:
-        - sub-services
+        - prices
       parameters:
         - name: id
           in: path
@@ -587,9 +587,9 @@ components:
         services:
           type: array
           items:
-            $ref: "#/components/schemas/ServiceType"
+            $ref: "#/components/schemas/Section"
 
-    ServiceType:
+    Section:
       type: object
       required: [id, slug, name, description]
       properties:
@@ -603,10 +603,10 @@ components:
           example: Стрижка
         description:
           type: string
-        sub_services:
+        services:
           type: array
           items:
-            $ref: "#/components/schemas/SubService"
+            $ref: "#/components/schemas/Service"
 
     LengthPrices:
       type: object
@@ -622,11 +622,11 @@ components:
           type: integer
           minimum: 0
 
-    SubServiceInput:
+    ServiceInput:
       type: object
-      required: [service_type_id, name]
+      required: [section_id, name]
       properties:
-        service_type_id:
+        section_id:
           type: integer
         name:
           type: string
@@ -641,7 +641,7 @@ components:
 
     LegacyService:
       type: object
-      description: Категория услуг; подуслуги — только в `items`
+      description: Категория услуг; строки прайса — только в `items`
       required:
         - id
         - name
@@ -660,9 +660,9 @@ components:
           example: Стрижки, уход, укладки
         items:
           type: array
-          description: Подуслуги (строки прайса) внутри категории
+          description: Услуги (строки прайса) внутри категории
           items:
-            $ref: "#/components/schemas/SubService"
+            $ref: "#/components/schemas/Service"
 
     TierPrices:
       type: object
@@ -703,9 +703,9 @@ components:
         male:
           $ref: "#/components/schemas/TierPrices"
 
-    SubService:
+    Service:
       type: object
-      description: Строка прайса (подуслуга) с матрицей цен
+      description: Услуга (строка прайса) с матрицей цен
       required:
         - id
         - name

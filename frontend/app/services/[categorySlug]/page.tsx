@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { fetchMainService, firstServiceSlug, MAIN_SERVICE_SLUGS } from "@/lib/api/services";
+import { fetchMainService, firstSectionSlug, MAIN_SERVICE_SLUGS } from "@/lib/api/services";
 
 type Props = { params: Promise<{ categorySlug: string }> };
 
@@ -20,13 +20,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-/** /services/hair → /services/hair/strizhka (первый тип услуги в направлении). */
 export default async function ServiceCategoryPage({ params }: Props) {
   const { categorySlug } = await params;
   const cat = await fetchMainService(categorySlug);
   if (!cat) notFound();
 
-  const first = firstServiceSlug(cat);
+  const first = firstSectionSlug(cat);
   if (!first) notFound();
 
   redirect(`/services/${categorySlug}/${first}`);

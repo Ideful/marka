@@ -5,7 +5,7 @@ import { MarqueePage } from "./pages/MarqueePage";
 import { HomepagePortfolioPage } from "./pages/HomepagePortfolioPage";
 import { GiftCertificatePage } from "./pages/GiftCertificatePage";
 import { SpecialistsPage } from "./pages/SpecialistsPage";
-import { SubServicesPage } from "./pages/SubServicesPage";
+import { PricesPage } from "./pages/PricesPage";
 
 const ADMIN_USERNAME = "r721rQWD";
 const ADMIN_PASSWORD = "ygb87!@E$8";
@@ -79,7 +79,7 @@ export function App() {
   return (
     <AdminLayout section={section} onSectionChange={setSection} onLogout={handleLogout}>
       {section === "specialists" ? <SpecialistsPage /> : null}
-      {section === "sub-services" ? <SubServicesPage /> : null}
+      {section === "prices" ? <PricesPage /> : null}
       {section === "marquee" ? <MarqueePage /> : null}
       {section === "homepage-portfolio" ? <HomepagePortfolioPage /> : null}
       {section === "gift-certificate" ? <GiftCertificatePage /> : null}

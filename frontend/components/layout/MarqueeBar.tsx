@@ -10,7 +10,7 @@ export function MarqueeBar({ text }: Props) {
   if (!trimmed) return null;
 
   const segment = ` ${trimmed} · `;
-  const line = segment.repeat(12);
+  const line = segment.repeat(4);
 
   return (
     <div

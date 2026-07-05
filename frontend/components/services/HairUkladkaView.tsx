@@ -5,9 +5,9 @@ import {
   SPECIALIST_TIER_LABELS,
   type SpecialistTierKey,
 } from "@/data/price-tiers";
-import type { MainService, ServicePriceRow, ServiceType } from "@/lib/api/services";
+import type { MainService, Section, ServicePriceRow } from "@/lib/api/services";
 import { formatPriceRub } from "@/lib/format-price";
-import { ServiceTypeShell } from "@/components/services/ServiceTypeShell";
+import { SectionShell } from "@/components/services/SectionShell";
 
 const BOOKING_URL = "https://n717666.yclients.com/company/677152/personal/menu?o=";
 
@@ -22,7 +22,7 @@ const TIER_DISPLAY_ORDER: SpecialistTierKey[] = [
 
 type Props = {
   main: MainService;
-  service: ServiceType;
+  section: Section;
   rows: ServicePriceRow[];
 };
 
@@ -105,9 +105,9 @@ function UkladkaCard({ row }: { row: ServicePriceRow }) {
   );
 }
 
-export function HairUkladkaView({ main, service, rows }: Props) {
+export function HairUkladkaView({ main, section, rows }: Props) {
   return (
-    <ServiceTypeShell main={main} service={service}>
+    <SectionShell main={main} section={section}>
       <div className="space-y-8">
       {rows.length === 0 ? (
         <p className="text-center text-ink-muted">Прайс для укладок скоро появится.</p>
@@ -128,6 +128,6 @@ export function HairUkladkaView({ main, service, rows }: Props) {
         Бесплатная консультация со специалистом
       </Link>
       </div>
-    </ServiceTypeShell>
+    </SectionShell>
   );
 }

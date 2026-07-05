@@ -7,14 +7,14 @@ import {
   lengthPricesHasValue,
   type LengthPrices,
 } from "@/data/hair-lengths";
-import type { MainService, ServicePriceRow, ServiceType } from "@/lib/api/services";
-import { ServiceTypeShell } from "@/components/services/ServiceTypeShell";
+import type { MainService, Section, ServicePriceRow } from "@/lib/api/services";
+import { SectionShell } from "@/components/services/SectionShell";
 
 const BOOKING_URL = "https://n717666.yclients.com/company/677152/personal/menu?o=";
 
 type Props = {
   main: MainService;
-  service: ServiceType;
+  section: Section;
   rows: ServicePriceRow[];
 };
 
@@ -83,9 +83,9 @@ function OkrashivanieBlock({ row }: { row: ServicePriceRow }) {
   );
 }
 
-export function HairOkrashivanieView({ main, service, rows }: Props) {
+export function HairOkrashivanieView({ main, section, rows }: Props) {
   return (
-    <ServiceTypeShell main={main} service={service}>
+    <SectionShell main={main} section={section}>
       <div className="space-y-8">
         {rows.length === 0 ? (
           <p className="text-center text-ink-muted">Прайс для окрашивания скоро появится.</p>
@@ -106,6 +106,6 @@ export function HairOkrashivanieView({ main, service, rows }: Props) {
           Бесплатная консультация со специалистом
         </Link>
       </div>
-    </ServiceTypeShell>
+    </SectionShell>
   );
 }

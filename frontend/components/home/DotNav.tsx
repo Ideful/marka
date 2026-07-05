@@ -25,7 +25,7 @@ export function DotNav({ sections }: Props) {
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
         if (!visible?.target?.id) return;
         const idx = sections.findIndex((s) => s.id === visible.target.id);
-        if (idx >= 0) setActive(idx);
+        if (idx >= 0) setActive((prev) => (prev === idx ? prev : idx));
       },
       { rootMargin: "-45% 0px -45% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] },
     );

@@ -11,7 +11,7 @@ export type ApiGenderedPrices = {
   male: ApiTierPrices;
 };
 
-export type SubService = {
+export type Service = {
   id: number;
   name: string;
   description: string;
@@ -20,19 +20,19 @@ export type SubService = {
   sort_order: number;
 };
 
-export type ServiceType = {
+export type Section = {
   id: number;
   slug: string;
   name: string;
   description: string;
-  sub_services?: SubService[];
+  services?: Service[];
 };
 
 export type MainService = {
   id: number;
   slug: string;
   name: string;
-  services: ServiceType[];
+  services: Section[];
 };
 
 export type ServicePriceRow = {
@@ -43,13 +43,13 @@ export type ServicePriceRow = {
   length_prices?: LengthPrices;
 };
 
-export function subServiceToPriceRow(sub: SubService): ServicePriceRow {
+export function serviceToPriceRow(service: Service): ServicePriceRow {
   return {
-    id: sub.id,
-    name: sub.name,
-    description: sub.description || undefined,
-    prices: sub.prices ? normalizeGenderedPrices(sub.prices) : undefined,
-    length_prices: sub.length_prices ? normalizeLengthPrices(sub.length_prices) : undefined,
+    id: service.id,
+    name: service.name,
+    description: service.description || undefined,
+    prices: service.prices ? normalizeGenderedPrices(service.prices) : undefined,
+    length_prices: service.length_prices ? normalizeLengthPrices(service.length_prices) : undefined,
   };
 }
 
@@ -60,15 +60,13 @@ function normalizeMainService(raw: MainService): MainService {
   };
 }
 
-/** Первый тип услуги в направлении (по sort_order из API). */
-export function firstServiceSlug(main: Pick<MainService, "services">): string | null {
-  const services = Array.isArray(main.services) ? main.services : [];
-  return services[0]?.slug ?? null;
+export function firstSectionSlug(main: Pick<MainService, "services">): string | null {
+  const sections = Array.isArray(main.services) ? main.services : [];
+  return sections[0]?.slug ?? null;
 }
 
-/** Ссылка на страницу направления — сразу на первый тип услуги. */
 export function serviceDirectionHref(main: Pick<MainService, "slug" | "services">): string {
-  const first = firstServiceSlug(main);
+  const first = firstSectionSlug(main);
   if (first) return `/services/${main.slug}/${first}`;
   return `/services/${main.slug}`;
 }
@@ -90,22 +88,21 @@ export async function fetchMainService(slug: string): Promise<MainService | null
   return normalizeMainService((await res.json()) as MainService);
 }
 
-export async function fetchServiceType(
+export async function fetchSection(
   mainSlug: string,
-  serviceSlug: string,
-): Promise<ServiceType | null> {
+  sectionSlug: string,
+): Promise<Section | null> {
   const base = getApiBaseUrl();
-  const res = await fetch(`${base}/main-services/${mainSlug}/services/${serviceSlug}`, {
+  const res = await fetch(`${base}/main-services/${mainSlug}/sections/${sectionSlug}`, {
     cache: "no-store",
   });
   if (res.status === 404) return null;
   if (!res.ok) {
-    throw new Error(`API /main-services/${mainSlug}/services/${serviceSlug}: ${res.status}`);
+    throw new Error(`API /main-services/${mainSlug}/sections/${sectionSlug}: ${res.status}`);
   }
-  return (await res.json()) as ServiceType;
+  return (await res.json()) as Section;
 }
 
-/** Слаги 5 направлений — совпадают с backend seed. */
 export const MAIN_SERVICE_SLUGS = [
   "hair",
   "nails",
@@ -114,8 +111,7 @@ export const MAIN_SERVICE_SLUGS = [
   "makeup",
 ] as const;
 
-/** Типы услуг парикмахерского направления (пока только они на фронте). */
-export const HAIR_SERVICE_SLUGS = [
+export const HAIR_SECTION_SLUGS = [
   "strizhka",
   "ukladka",
   "okrashivanie",

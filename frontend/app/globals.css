@@ -35,6 +35,14 @@ body {
   will-change: transform;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+}
+
 @keyframes booking-gradient-shift {
   from {
     background-position: 0% 50%;

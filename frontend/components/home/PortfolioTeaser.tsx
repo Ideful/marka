@@ -75,7 +75,7 @@ export function PortfolioTeaser({ items }: Props) {
                   </figure>
                 );
               })
-            : Array.from({ length: 6 }, (_, index) => <PhotoPlaceholder key={index} />)}
+            : Array.from({ length: 3 }, (_, index) => <PhotoPlaceholder key={index} />)}
         </div>
       </div>
     </section>

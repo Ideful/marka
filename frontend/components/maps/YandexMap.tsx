@@ -1,18 +1,25 @@
+import { LazyIframe } from "@/components/ui/LazyIframe";
+
 type Props = {
   embedSrc: string;
   title: string;
 };
 
-/** Встроенная карта; overlay снимается по тапу — удобно на тач-устройствах */
+/** Карта подгружается при прокрутке к секции контактов */
 export function YandexMap({ embedSrc, title }: Props) {
   return (
     <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-ink/5 md:aspect-[21/9]">
-      <iframe
+      <LazyIframe
         src={embedSrc}
         title={title}
         className="h-full w-full border-0"
-        loading="lazy"
         allowFullScreen
+        rootMargin="400px"
+        placeholder={
+          <div className="flex h-full w-full items-center justify-center text-sm text-ink-muted">
+            Карта загрузится при прокрутке
+          </div>
+        }
       />
     </div>
   );

@@ -37,10 +37,6 @@ export default async function SpecialistsPage() {
           <p className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
             {loadError}
           </p>
-        ) : specialists.length === 0 ? (
-          <p className="mt-6 max-w-2xl text-ink-muted">
-            Скоро здесь появятся карточки мастеров.
-          </p>
         ) : (
           <SpecialistsList specialists={specialists} />
         )}

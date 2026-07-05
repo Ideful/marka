@@ -1,3 +1,4 @@
+import { HeroVideoBackground } from "@/components/home/HeroVideoBackground";
 import { salonConfig } from "@/lib/domain/salon-config";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 
@@ -18,15 +19,7 @@ export function HeroSection() {
         }}
       />
 
-      <video
-        className="absolute inset-0 h-full w-full object-cover opacity-50"
-        autoPlay
-        muted
-        loop
-        playsInline
-      >
-        <source src="/video.MP4" type="video/mp4" />
-      </video>
+      <HeroVideoBackground />
 
       <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center gap-8 px-6 py-28 text-center md:gap-10 md:py-32">
         <p

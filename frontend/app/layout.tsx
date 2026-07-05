@@ -7,7 +7,7 @@ import { salonConfig } from "@/lib/domain/salon-config";
 
 const montserrat = Montserrat({
   subsets: ["latin", "cyrillic"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-montserrat",
   display: "swap",
 });

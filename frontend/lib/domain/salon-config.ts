@@ -31,9 +31,13 @@ export class SalonConfig {
 
   readonly yandexMapExternalUrl = "https://yandex.ru/maps/-/CLdkIQkg";
 
-  /** Виджет рейтинга Яндекс.Справочника */
-  readonly yandexRatingBadgeEmbedSrc =
-    "https://yandex.ru/sprav/widget/rating-badge/170004973372?type=award";
+  readonly yandexOrgId = "170004973372";
+
+  readonly yandexReviewsUrl =
+    "https://yandex.ru/maps/org/170004973372/reviews?utm_source=site&utm_medium=badge";
+
+  /** Актуальный рейтинг на Яндекс.Картах */
+  readonly yandexRating = 5.0;
 
   readonly whatsappUrl = "https://wa.me/79859990188";
   readonly telegramUrl = "https://t.me/Marque_arena";

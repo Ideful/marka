@@ -12,7 +12,7 @@ MINIO_BUCKET ?= marka
 MINIO_USE_SSL ?= false
 MINIO_PUBLIC_URL ?= http://localhost:9000/marka
 
-.PHONY: help install install-frontend install-admin dev-frontend dev-admin dev-backend start-backend \
+.PHONY: help install install-frontend install-admin dev-frontend dev-admin dev-backend start-backend db-reset \
 	docker-up docker-down docker-logs docker-ps \
 	docker-frontend-build docker-frontend-up docker-frontend-down docker-frontend-logs \
 	docker-infra-up docker-infra-down
@@ -29,6 +29,7 @@ help:
 	@echo "  make dev-frontend     - run frontend (default port 3000)"
 	@echo "  make dev-admin        - run admin-front (default port 5173)"
 	@echo "  make dev-backend      - run backend (needs Postgres, port 3001)"
+	@echo "  make db-reset         - drop all app tables and reseed (DATABASE_URL)"
 	@echo "  make docker-infra-up  - Postgres + MinIO only (local dev)"
 	@echo ""
 	@echo "Custom port examples:"
@@ -68,7 +69,7 @@ ifeq ($(PORT),)
 		MINIO_BUCKET="$(MINIO_BUCKET)" \
 		MINIO_USE_SSL="$(MINIO_USE_SSL)" \
 		MINIO_PUBLIC_URL="$(MINIO_PUBLIC_URL)" \
-		go run .
+		go run ./cmd/server
 else
 	cd backend && PORT=$(PORT) \
 		DATABASE_URL="$(DATABASE_URL)" \
@@ -78,10 +79,13 @@ else
 		MINIO_BUCKET="$(MINIO_BUCKET)" \
 		MINIO_USE_SSL="$(MINIO_USE_SSL)" \
 		MINIO_PUBLIC_URL="$(MINIO_PUBLIC_URL)" \
-		go run .
+		go run ./cmd/server
 endif
 
 start-backend: dev-backend
+
+db-reset:
+	cd backend && DATABASE_URL="$(DATABASE_URL)" go run ./cmd/resetdb
 
 docker-up:
 	$(DOCKER_COMPOSE) up -d --build

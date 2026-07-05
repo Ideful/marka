@@ -1,7 +1,7 @@
 import type { GenderedPrices } from "./price-tiers";
 import type { LengthPrices } from "./length-prices";
 
-export type SubService = {
+export type Service = {
   id: number;
   name: string;
   description: string;
@@ -10,8 +10,8 @@ export type SubService = {
   sort_order: number;
 };
 
-export type SubServiceInput = {
-  service_type_id: number;
+export type ServiceInput = {
+  section_id: number;
   name: string;
   description: string;
   prices?: GenderedPrices;
@@ -19,17 +19,17 @@ export type SubServiceInput = {
   sort_order: number;
 };
 
-export type ServiceType = {
+export type Section = {
   id: number;
   slug: string;
   name: string;
   description: string;
-  sub_services?: SubService[];
+  services?: Service[];
 };
 
 export type MainService = {
   id: number;
   slug: string;
   name: string;
-  services: ServiceType[];
+  services: Section[];
 };
