@@ -4,12 +4,14 @@ import { PhilosophySection } from "@/components/home/PhilosophySection";
 import { ServicesTeaser } from "@/components/home/ServicesTeaser";
 import { PortfolioTeaser } from "@/components/home/PortfolioTeaser";
 import { GiftCertificateTeaser } from "@/components/home/GiftCertificateTeaser";
+import { SpecialistsTeaser } from "@/components/home/SpecialistsTeaser";
 import { VacanciesTeaser } from "@/components/home/VacanciesTeaser";
 import { ContactsPanel } from "@/components/contacts/ContactsPanel";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { MarqueeBar } from "@/components/layout/MarqueeBar";
 import { DotNav } from "@/components/home/DotNav";
 import { fetchMarqueeText, fetchHomepagePortfolio, fetchGiftCertificate } from "@/lib/api/site-settings";
+import { fetchSpecialists } from "@/lib/api/specialists";
 import { salonConfig } from "@/lib/domain/salon-config";
 
 const SECTIONS = [
@@ -20,10 +22,11 @@ const SECTIONS = [
 ];
 
 export default async function HomePage() {
-  const [marqueeText, homepagePortfolio, giftCertificate] = await Promise.all([
+  const [marqueeText, homepagePortfolio, giftCertificate, specialists] = await Promise.all([
     fetchMarqueeText(),
     fetchHomepagePortfolio(),
     fetchGiftCertificate(),
+    fetchSpecialists().catch(() => []),
   ]);
   const jsonLd = {
     "@context": "https://schema.org",
@@ -74,6 +77,7 @@ export default async function HomePage() {
       <ServicesTeaser />
       <PortfolioTeaser items={homepagePortfolio.items} />
       <GiftCertificateTeaser settings={giftCertificate} />
+      <SpecialistsTeaser specialists={specialists} />
       <VacanciesTeaser />
       <ContactsPanel />
       <SiteFooter />
