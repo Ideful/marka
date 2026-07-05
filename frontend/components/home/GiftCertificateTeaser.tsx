@@ -35,7 +35,34 @@ export function GiftCertificateTeaser({ settings }: Props) {
       aria-labelledby="certificates-heading"
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-10 md:gap-14">
-        <div className="grid items-center gap-10 md:grid-cols-2 md:gap-14">
+        <div className="flex flex-col items-center gap-2 text-center md:gap-3">
+          <p className="text-xs font-medium uppercase tracking-[0.25em] text-ink-muted">
+            Подарки
+          </p>
+          <h2
+            id="certificates-heading"
+            className="text-3xl font-bold uppercase leading-tight tracking-tight text-ink md:text-4xl"
+          >
+            Подарочный
+            <br />
+            сертификат
+          </h2>
+        </div>
+
+        <div className="flex max-w-2xl flex-col gap-6">
+          <p className="whitespace-pre-wrap text-base leading-relaxed text-ink-muted md:text-lg">
+            {teaserText}
+          </p>
+
+          <Link
+            href="/certificates"
+            className="inline-flex w-fit text-sm font-medium text-ink underline-offset-4 hover:text-accent hover:underline"
+          >
+            Подробнее о сертификатах →
+          </Link>
+        </div>
+
+        <div className="max-w-2xl">
           {photoSrc ? (
             <div className="overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-sm">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -48,33 +75,6 @@ export function GiftCertificateTeaser({ settings }: Props) {
           ) : (
             <PhotoPlaceholder />
           )}
-
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-2 md:gap-3">
-              <p className="text-xs font-medium uppercase tracking-[0.25em] text-ink-muted">
-                Подарки
-              </p>
-              <h2
-                id="certificates-heading"
-                className="text-3xl font-bold uppercase leading-tight tracking-tight text-ink md:text-4xl"
-              >
-                Подарочный
-                <br />
-                сертификат
-              </h2>
-            </div>
-
-            <p className="whitespace-pre-wrap text-base leading-relaxed text-ink-muted md:text-lg">
-              {teaserText}
-            </p>
-
-            <Link
-              href="/certificates"
-              className="inline-flex w-fit text-sm font-medium text-ink underline-offset-4 hover:text-accent hover:underline"
-            >
-              Подробнее о сертификатах →
-            </Link>
-          </div>
         </div>
       </div>
     </section>

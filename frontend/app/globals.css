@@ -43,16 +43,36 @@ body {
   }
 }
 
-@keyframes booking-gradient-shift {
-  from {
+@keyframes booking-shimmer-sweep {
+  0% {
     background-position: 0% 50%;
+    opacity: 0;
   }
-  to {
+  7% {
+    opacity: 1;
+  }
+  68% {
     background-position: 100% 50%;
+    opacity: 1;
+  }
+  100% {
+    background-position: 100% 50%;
+    opacity: 0;
   }
 }
 
 .booking-btn-shimmer {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.booking-btn-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
   background: linear-gradient(
     110deg,
     #1a1a1a 0%,
@@ -62,5 +82,13 @@ body {
     #1a1a1a 100%
   );
   background-size: 220% 100%;
-  animation: booking-gradient-shift 2.8s ease-in-out 1 forwards;
+  animation: booking-shimmer-sweep 2.8s ease-in-out forwards;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .booking-btn-shimmer::after {
+    animation: none;
+    opacity: 0;
+  }
 }

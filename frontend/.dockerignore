@@ -9,3 +9,7 @@ out
 !.env.example
 npm-debug.log*
 .DS_Store
+coverage
+.turbo
+*.heapsnapshot
+public/hero-loop.mp4

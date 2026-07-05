@@ -10,7 +10,7 @@ export function PhilosophySection() {
       aria-labelledby="philosophy-heading"
     >
       <div className="mx-auto flex max-w-3xl flex-col gap-6 md:gap-8">
-        <div className="flex flex-col gap-2 md:gap-3">
+        <div className="flex flex-col items-center gap-2 text-center md:gap-3">
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-ink-muted">
             {philosophy.label}
           </p>
