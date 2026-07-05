@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-const PRICE_TABLE_SELECTOR = "[data-service-price-table]";
+const BOOKING_TRIGGER_SELECTOR = "[data-service-price-table], [data-booking-trigger]";
 const HEADER_OFFSET = 72;
 const HOME_BOTTOM_THRESHOLD = 96;
 const SHIMMER_MS = 2800;
@@ -15,22 +15,52 @@ function isHomeBottomReached(): boolean {
   return scrollY + innerHeight >= docHeight - HOME_BOTTOM_THRESHOLD;
 }
 
-function isPriceTablePassed(): boolean {
-  const tables = document.querySelectorAll(PRICE_TABLE_SELECTOR);
-  if (tables.length === 0) return false;
+function isBookingTriggerPassed(): boolean {
+  const triggers = document.querySelectorAll(BOOKING_TRIGGER_SELECTOR);
+  if (triggers.length === 0) return false;
 
-  const table = tables[tables.length - 1];
-  const rect = table.getBoundingClientRect();
+  const trigger = triggers[triggers.length - 1];
+  const rect = trigger.getBoundingClientRect();
   return rect.bottom < HEADER_OFFSET;
 }
 
-/** Однократная подсветка «Записаться» на главной (конец страницы) или на услугах (после таблицы цен). */
+function isSpecialistDetailPage(pathname: string): boolean {
+  return /^\/specialists\/\d+$/.test(pathname);
+}
+
+function isSpecialistsArea(pathname: string): boolean {
+  return pathname.startsWith("/specialists");
+}
+
+function shouldHighlight(pathname: string): boolean {
+  if (pathname === "/") return isHomeBottomReached();
+  if (isBookingTriggerPassed()) return true;
+  if (isSpecialistDetailPage(pathname)) return isHomeBottomReached();
+  return false;
+}
+
+/** Сохраняется между /specialists/* — сбрасывается только при уходе из раздела. */
+let specialistsAreaShimmerPlayed = false;
+
+/** Однократная подсветка «Записаться» на главной, услугах и карточке специалиста. */
 export function useBookingButtonHighlight() {
   const pathname = usePathname();
   const [shimmer, setShimmer] = useState(false);
   const hasPlayedRef = useRef(false);
 
   useEffect(() => {
+    if (isSpecialistsArea(pathname)) {
+      if (specialistsAreaShimmerPlayed) {
+        hasPlayedRef.current = true;
+        setShimmer(false);
+        return;
+      }
+      hasPlayedRef.current = false;
+      setShimmer(false);
+      return;
+    }
+
+    specialistsAreaShimmerPlayed = false;
     hasPlayedRef.current = false;
     setShimmer(false);
   }, [pathname]);
@@ -39,11 +69,11 @@ export function useBookingButtonHighlight() {
     function update() {
       if (hasPlayedRef.current) return;
 
-      const shouldHighlight =
-        pathname === "/" ? isHomeBottomReached() : isPriceTablePassed();
-
-      if (shouldHighlight) {
+      if (shouldHighlight(pathname)) {
         hasPlayedRef.current = true;
+        if (isSpecialistsArea(pathname)) {
+          specialistsAreaShimmerPlayed = true;
+        }
         setShimmer(true);
       }
     }
@@ -84,4 +114,13 @@ export const bookingHeaderButtonClass = (highlight: boolean, size: "md" | "sm" =
       : "rounded-full px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-white bg-ink hover:bg-ink/85";
 
   return highlight ? `${base} booking-btn-shimmer` : base;
+};
+
+export const bookingOnlineButtonClass = (menuOpen: boolean) => {
+  const base =
+    "mt-4 inline-flex min-h-[52px] w-full items-center justify-center rounded-full px-6 text-base font-semibold text-white";
+
+  return menuOpen
+    ? `${base} relative isolate overflow-visible booking-btn-perimeter-glow`
+    : `${base} bg-ink hover:bg-ink/90`;
 };

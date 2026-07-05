@@ -1,4 +1,5 @@
 import { HomeSection, homeMediaCardClass } from "@/components/home/HomeSection";
+import { HOME_PAGE_SECTION_TONES } from "@/components/home/home-section-styles";
 import { getApiBaseUrl, resolvePhotoUrl } from "@/lib/api/config";
 import type { PortfolioItem } from "@/lib/api/site-settings";
 
@@ -30,7 +31,7 @@ export function PortfolioTeaser({ items }: Props) {
       headingId="portfolio-heading"
       eyebrow="Работы"
       title="Портфолио"
-      tone="light"
+      tone={HOME_PAGE_SECTION_TONES.portfolio}
       description={
         hasPhotos
           ? undefined

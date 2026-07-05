@@ -10,6 +10,7 @@ import { ContactsPanel } from "@/components/contacts/ContactsPanel";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { MarqueeBar } from "@/components/layout/MarqueeBar";
 import { DotNav } from "@/components/home/DotNav";
+import { HOME_PAGE_SECTION_TONES } from "@/components/home/home-section-styles";
 import { fetchMarqueeText, fetchHomepagePortfolio, fetchGiftCertificate } from "@/lib/api/site-settings";
 import { fetchSpecialists } from "@/lib/api/specialists";
 import { salonConfig } from "@/lib/domain/salon-config";
@@ -79,7 +80,7 @@ export default async function HomePage() {
       <GiftCertificateTeaser settings={giftCertificate} />
       <SpecialistsTeaser specialists={specialists} />
       <VacanciesTeaser />
-      <ContactsPanel />
+      <ContactsPanel tone={HOME_PAGE_SECTION_TONES.contacts} />
       <SiteFooter />
       <MarqueeBar text={marqueeText} />
     </>

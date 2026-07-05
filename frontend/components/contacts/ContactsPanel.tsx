@@ -1,30 +1,38 @@
 import { salonConfig } from "@/lib/domain/salon-config";
 import { YandexMap } from "@/components/maps/YandexMap";
 import { MessengerLinks } from "@/components/contacts/MessengerLinks";
+import {
+  homeSectionShellClass,
+  homeSectionToneStyles,
+  type HomeSectionTone,
+} from "@/components/home/home-section-styles";
 
 type Props = {
   /** Если false — без верхнего заголовка секции (на странице «Контакты») */
   showEyebrow?: boolean;
+  tone?: HomeSectionTone;
 };
 
-export function ContactsPanel({ showEyebrow = true }: Props) {
+export function ContactsPanel({ showEyebrow = true, tone = "light" }: Props) {
   const c = salonConfig;
+  const styles = homeSectionToneStyles[tone];
+
   return (
     <section
       id="contacts"
-      className="scroll-mt-24 bg-white px-4 py-16 md:px-6 md:py-24"
+      className={`${homeSectionShellClass} ${styles.section}`}
       aria-labelledby="contacts-heading"
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-10 md:gap-14">
         <div className="flex flex-col gap-2 text-center md:gap-3">
           {showEyebrow ? (
-            <p className="text-xs font-medium uppercase tracking-[0.25em] text-ink-muted">
+            <p className={`text-xs font-medium uppercase tracking-[0.25em] ${styles.eyebrow}`}>
               Контакты
             </p>
           ) : null}
           <h2
             id="contacts-heading"
-            className="text-balance text-2xl font-bold uppercase leading-tight tracking-tight text-ink md:text-4xl"
+            className={`text-balance text-2xl font-bold uppercase leading-tight tracking-tight md:text-4xl ${styles.title}`}
           >
             {c.hoursTitle}
             <br />

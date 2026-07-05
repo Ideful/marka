@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { salonConfig } from "@/lib/domain/salon-config";
-import { bookingHeaderButtonClass, useBookingButtonHighlight } from "@/lib/use-booking-button-highlight";
+import { bookingHeaderButtonClass, bookingOnlineButtonClass, useBookingButtonHighlight } from "@/lib/use-booking-button-highlight";
 
 const links = [
   { href: "/services", label: "Услуги" },
@@ -151,7 +151,7 @@ export function SiteHeader() {
               href={salonConfig.bookingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-4 inline-flex min-h-[52px] items-center justify-center rounded-full bg-ink px-6 text-base font-semibold text-white hover:bg-ink/90"
+              className={bookingOnlineButtonClass(menuOpen)}
               onClick={closeMenu}
             >
               Записаться онлайн

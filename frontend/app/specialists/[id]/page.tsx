@@ -69,10 +69,10 @@ export default async function SpecialistDetailPage({ params }: Props) {
           )}
         </div>
 
-        <div className="mt-10">
+        <div className="mt-10" data-booking-trigger>
           <SpecialistSections sections={specialist.description} />
+          <SpecialistPortfolio items={specialist.portfolio} />
         </div>
-        <SpecialistPortfolio items={specialist.portfolio} />
       </article>
       <SiteFooter />
     </>

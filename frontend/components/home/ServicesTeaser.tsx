@@ -3,6 +3,7 @@ import {
   HomeSection,
   homeLightCardClass,
 } from "@/components/home/HomeSection";
+import { HOME_PAGE_SECTION_TONES } from "@/components/home/home-section-styles";
 import { fetchMainServices, serviceDirectionHref } from "@/lib/api/services";
 
 export async function ServicesTeaser() {
@@ -19,7 +20,7 @@ export async function ServicesTeaser() {
       headingId="services-heading"
       eyebrow="Услуги"
       title="Услуги и цены"
-      tone="sand"
+      tone={HOME_PAGE_SECTION_TONES.services}
       footerAction={{ href: "/services", label: "Все разделы →" }}
     >
       {categories.length === 0 ? (
