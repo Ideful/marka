@@ -43,8 +43,7 @@ func seedCatalog(ctx context.Context, pool *pgxpool.Pool) error {
 		{"strizhka", "Стрижка", "", 1},
 		{"ukladka", "Укладка", "", 2},
 		{"okrashivanie", "Окрашивание", "", 3},
-		{"barber", "Барбер", "", 4},
-		{"uhod-volos", "Уход для волос", "", 5},
+		{"uhod-volos", "Уход для волос", "", 4},
 	}
 
 	var hairID int

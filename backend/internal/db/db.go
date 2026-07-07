@@ -44,6 +44,9 @@ func Migrate(ctx context.Context, pool *pgxpool.Pool) error {
 	if err := createSchema(ctx, pool); err != nil {
 		return err
 	}
+	if err := migrateCatalog(ctx, pool); err != nil {
+		return err
+	}
 	if err := seedCatalog(ctx, pool); err != nil {
 		return fmt.Errorf("seed catalog: %w", err)
 	}
