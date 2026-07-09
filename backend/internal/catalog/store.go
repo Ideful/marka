@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -11,6 +12,7 @@ import (
 	"marka-backend/internal/httputil"
 	"marka-backend/internal/models"
 	"marka-backend/internal/prices"
+	"marka-backend/internal/specialists"
 )
 
 type Store struct {
@@ -25,6 +27,8 @@ func (s *Store) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /main-services", s.handleListMainServices)
 	mux.HandleFunc("GET /main-services/{slug}", s.handleGetMainService)
 	mux.HandleFunc("GET /main-services/{slug}/sections/{sectionSlug}", s.handleGetSection)
+	mux.HandleFunc("PUT /main-services/{slug}/sections/{sectionSlug}/payload", s.handlePutSectionPayload)
+	mux.HandleFunc("PUT /main-services/{slug}/sections/{sectionSlug}/portfolio", s.handlePutSectionPortfolio)
 }
 
 func (s *Store) listMainServices(ctx context.Context) ([]models.MainService, error) {
@@ -83,7 +87,7 @@ func (s *Store) getMainServiceBySlug(ctx context.Context, slug string) (models.M
 
 func (s *Store) listSections(ctx context.Context, mainServiceID int, withServices bool) ([]models.Section, error) {
 	rows, err := s.pool.Query(ctx, `
-		SELECT id, slug, name, description
+		SELECT id, slug, name, description, table_template, payload, template_version, portfolio
 		FROM sections
 		WHERE main_service_id = $1
 		ORDER BY sort_order, id
@@ -95,8 +99,8 @@ func (s *Store) listSections(ctx context.Context, mainServiceID int, withService
 
 	var out []models.Section
 	for rows.Next() {
-		var section models.Section
-		if err := rows.Scan(&section.ID, &section.Slug, &section.Name, &section.Description); err != nil {
+		section, err := scanSectionRow(rows)
+		if err != nil {
 			return nil, err
 		}
 		section.Services = []models.Service{}
@@ -108,11 +112,13 @@ func (s *Store) listSections(ctx context.Context, mainServiceID int, withService
 
 	if withServices {
 		for i := range out {
-			services, err := s.listServicesBySection(ctx, out[i].ID)
-			if err != nil {
-				return nil, err
+			if UsesServiceRows(TableTemplate(out[i].TableTemplate)) {
+				services, err := s.listServicesBySection(ctx, out[i].ID)
+				if err != nil {
+					return nil, err
+				}
+				out[i].Services = services
 			}
-			out[i].Services = services
 		}
 	}
 
@@ -129,21 +135,33 @@ func (s *Store) getSection(ctx context.Context, mainSlug, sectionSlug string) (m
 	}
 
 	var section models.Section
+	var payload []byte
+	var portfolioRaw []byte
 	err = s.pool.QueryRow(ctx, `
-		SELECT st.id, st.slug, st.name, st.description
+		SELECT st.id, st.slug, st.name, st.description, st.table_template, st.payload, st.template_version, st.portfolio
 		FROM sections st
 		JOIN main_services ms ON ms.id = st.main_service_id
 		WHERE ms.slug = $1 AND st.slug = $2
-	`, mainSlug, sectionSlug).Scan(&section.ID, &section.Slug, &section.Name, &section.Description)
+	`, mainSlug, sectionSlug).Scan(
+		&section.ID, &section.Slug, &section.Name, &section.Description,
+		&section.TableTemplate, &payload, &section.TemplateVersion, &portfolioRaw,
+	)
 	if err != nil {
 		return models.MainService{}, models.Section{}, err
+	}
+	section.Payload = json.RawMessage(payload)
+	section.Portfolio = specialists.ParsePortfolioJSON(portfolioRaw)
+
+	if UsesServiceRows(TableTemplate(section.TableTemplate)) {
+		services, err := s.listServicesBySection(ctx, section.ID)
+		if err != nil {
+			return models.MainService{}, models.Section{}, err
+		}
+		section.Services = services
+	} else {
+		section.Services = []models.Service{}
 	}
 
-	services, err := s.listServicesBySection(ctx, section.ID)
-	if err != nil {
-		return models.MainService{}, models.Section{}, err
-	}
-	section.Services = services
 	return ms, section, nil
 }
 
@@ -168,6 +186,56 @@ func (s *Store) listServicesBySection(ctx context.Context, sectionID int) ([]mod
 		out = append(out, item)
 	}
 	return out, rows.Err()
+}
+
+type rowScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanSectionRow(row rowScanner) (models.Section, error) {
+	var section models.Section
+	var payload []byte
+	var portfolioRaw []byte
+	if err := row.Scan(
+		&section.ID, &section.Slug, &section.Name, &section.Description,
+		&section.TableTemplate, &payload, &section.TemplateVersion, &portfolioRaw,
+	); err != nil {
+		return models.Section{}, err
+	}
+	section.Payload = json.RawMessage(payload)
+	section.Portfolio = specialists.ParsePortfolioJSON(portfolioRaw)
+	return section, nil
+}
+
+func (s *Store) updateSectionPayload(ctx context.Context, mainSlug, sectionSlug string, payload json.RawMessage) (models.Section, error) {
+	meta, ok := SectionMetaBySlug(mainSlug, sectionSlug)
+	if !ok {
+		return models.Section{}, httputil.ErrNotFound
+	}
+	if UsesServiceRows(meta.TableTemplate) {
+		return models.Section{}, errors.New("this section uses service rows, not payload")
+	}
+	if err := ValidatePayload(mainSlug, sectionSlug, payload); err != nil {
+		return models.Section{}, err
+	}
+
+	tag, err := s.pool.Exec(ctx, `
+		UPDATE sections st
+		SET payload = $3::jsonb, template_version = $4
+		FROM main_services ms
+		WHERE st.main_service_id = ms.id
+		  AND ms.slug = $1
+		  AND st.slug = $2
+	`, mainSlug, sectionSlug, payload, TemplateVersion)
+	if err != nil {
+		return models.Section{}, err
+	}
+	if tag.RowsAffected() == 0 {
+		return models.Section{}, httputil.ErrNotFound
+	}
+
+	_, section, err := s.getSection(ctx, mainSlug, sectionSlug)
+	return section, err
 }
 
 func (s *Store) handleListMainServices(w http.ResponseWriter, r *http.Request) {
@@ -206,6 +274,94 @@ func (s *Store) handleGetSection(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		httputil.WriteAPIError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	httputil.WriteJSON(w, http.StatusOK, section)
+}
+
+type payloadInput struct {
+	Payload json.RawMessage `json:"payload"`
+}
+
+func (s *Store) handlePutSectionPayload(w http.ResponseWriter, r *http.Request) {
+	mainSlug := r.PathValue("slug")
+	sectionSlug := r.PathValue("sectionSlug")
+
+	var body payloadInput
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		httputil.WriteAPIError(w, http.StatusBadRequest, "invalid json")
+		return
+	}
+	if len(body.Payload) == 0 {
+		httputil.WriteAPIError(w, http.StatusBadRequest, "payload is required")
+		return
+	}
+
+	section, err := s.updateSectionPayload(r.Context(), mainSlug, sectionSlug, body.Payload)
+	if errors.Is(err, httputil.ErrNotFound) {
+		httputil.WriteAPIError(w, http.StatusNotFound, "section not found")
+		return
+	}
+	if err != nil {
+		httputil.WriteAPIError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	httputil.WriteJSON(w, http.StatusOK, section)
+}
+
+type portfolioInput struct {
+	Portfolio []models.Portfolio `json:"portfolio"`
+}
+
+func (s *Store) updateSectionPortfolio(ctx context.Context, mainSlug, sectionSlug string, portfolio []models.Portfolio) (models.Section, error) {
+	if _, ok := SectionMetaBySlug(mainSlug, sectionSlug); !ok {
+		return models.Section{}, httputil.ErrNotFound
+	}
+
+	raw, err := specialists.MarshalPortfolio(portfolio)
+	if err != nil {
+		return models.Section{}, err
+	}
+
+	tag, err := s.pool.Exec(ctx, `
+		UPDATE sections st
+		SET portfolio = $3::jsonb
+		FROM main_services ms
+		WHERE st.main_service_id = ms.id
+		  AND ms.slug = $1
+		  AND st.slug = $2
+	`, mainSlug, sectionSlug, raw)
+	if err != nil {
+		return models.Section{}, err
+	}
+	if tag.RowsAffected() == 0 {
+		return models.Section{}, httputil.ErrNotFound
+	}
+
+	_, section, err := s.getSection(ctx, mainSlug, sectionSlug)
+	return section, err
+}
+
+func (s *Store) handlePutSectionPortfolio(w http.ResponseWriter, r *http.Request) {
+	mainSlug := r.PathValue("slug")
+	sectionSlug := r.PathValue("sectionSlug")
+
+	var body portfolioInput
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		httputil.WriteAPIError(w, http.StatusBadRequest, "invalid json")
+		return
+	}
+	if body.Portfolio == nil {
+		body.Portfolio = []models.Portfolio{}
+	}
+
+	section, err := s.updateSectionPortfolio(r.Context(), mainSlug, sectionSlug, body.Portfolio)
+	if errors.Is(err, httputil.ErrNotFound) {
+		httputil.WriteAPIError(w, http.StatusNotFound, "section not found")
+		return
+	}
+	if err != nil {
+		httputil.WriteAPIError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	httputil.WriteJSON(w, http.StatusOK, section)

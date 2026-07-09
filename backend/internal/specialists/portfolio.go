@@ -7,6 +7,14 @@ import (
 	"marka-backend/internal/models"
 )
 
+func ParsePortfolioJSON(raw []byte) []models.Portfolio {
+	return parsePortfolioJSON(raw)
+}
+
+func MarshalPortfolio(list []models.Portfolio) ([]byte, error) {
+	return marshalPortfolio(list)
+}
+
 func parsePortfolioJSON(raw []byte) []models.Portfolio {
 	if len(raw) == 0 {
 		return []models.Portfolio{}

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -17,6 +18,9 @@ import (
 
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds)
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})))
 }
 
 type healthResponse struct {
@@ -57,9 +61,11 @@ func main() {
 	sitesettings.New(pool).RegisterRoutes(mux)
 
 	addr := "0.0.0.0:" + port
-	log.Printf("marka-backend listening on http://%s", addr)
-	if err := http.ListenAndServe(addr, httputil.WithCORS(mux)); err != nil {
-		log.Fatal(err)
+	handler := httputil.WithRequestLogging(httputil.WithCORS(mux))
+	slog.Info("server listening", slog.String("addr", "http://"+addr))
+	if err := http.ListenAndServe(addr, handler); err != nil {
+		slog.Error("server stopped", slog.Any("err", err))
+		os.Exit(1)
 	}
 }
 

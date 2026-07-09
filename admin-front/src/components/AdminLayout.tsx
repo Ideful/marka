@@ -16,7 +16,7 @@ type NavItem = {
 
 const NAV: NavItem[] = [
   { id: "specialists", label: "Специалисты", enabled: true },
-  { id: "prices", label: "Цены", enabled: true },
+  { id: "prices", label: "Услуги", enabled: true },
   { id: "marquee", label: "Бегущая строка", enabled: true },
   { id: "homepage-portfolio", label: "Портфолио", enabled: true },
   { id: "gift-certificate", label: "Сертификат", enabled: true },

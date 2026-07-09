@@ -69,6 +69,38 @@ func createSchema(ctx context.Context, pool *pgxpool.Pool) error {
 		return fmt.Errorf("alter specialists.portfolio: %w", err)
 	}
 
+	_, err = pool.Exec(ctx, `
+		ALTER TABLE sections
+		ADD COLUMN IF NOT EXISTS table_template TEXT NOT NULL DEFAULT '';
+	`)
+	if err != nil {
+		return fmt.Errorf("alter sections.table_template: %w", err)
+	}
+
+	_, err = pool.Exec(ctx, `
+		ALTER TABLE sections
+		ADD COLUMN IF NOT EXISTS payload JSONB NOT NULL DEFAULT '{}';
+	`)
+	if err != nil {
+		return fmt.Errorf("alter sections.payload: %w", err)
+	}
+
+	_, err = pool.Exec(ctx, `
+		ALTER TABLE sections
+		ADD COLUMN IF NOT EXISTS template_version INT NOT NULL DEFAULT 1;
+	`)
+	if err != nil {
+		return fmt.Errorf("alter sections.template_version: %w", err)
+	}
+
+	_, err = pool.Exec(ctx, `
+		ALTER TABLE sections
+		ADD COLUMN IF NOT EXISTS portfolio JSONB NOT NULL DEFAULT '[]';
+	`)
+	if err != nil {
+		return fmt.Errorf("alter sections.portfolio: %w", err)
+	}
+
 	return nil
 }
 
@@ -87,6 +119,10 @@ func createSchemaFresh(ctx context.Context, pool *pgxpool.Pool) error {
 			slug TEXT NOT NULL,
 			name TEXT NOT NULL,
 			description TEXT NOT NULL DEFAULT '',
+			table_template TEXT NOT NULL DEFAULT '',
+			payload JSONB NOT NULL DEFAULT '{}',
+			template_version INT NOT NULL DEFAULT 1,
+			portfolio JSONB NOT NULL DEFAULT '[]',
 			sort_order INT NOT NULL DEFAULT 0,
 			UNIQUE(main_service_id, slug)
 		);

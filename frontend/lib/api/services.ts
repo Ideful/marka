@@ -1,6 +1,7 @@
 import { getApiBaseUrl } from "@/lib/api/config";
 import type { SpecialistTierKey } from "@/data/price-tiers";
 import type { LengthPrices } from "@/data/hair-lengths";
+import type { TableTemplate } from "@/lib/table-templates";
 import { normalizeGenderedPrices } from "@/lib/format-price";
 import { normalizeLengthPrices } from "@/data/hair-lengths";
 
@@ -11,13 +12,26 @@ export type ApiGenderedPrices = {
   male: ApiTierPrices;
 };
 
+export type SpecialistPrices = {
+  top_stylist: number;
+  stylist: number;
+  top_master: number;
+  master: number;
+};
+
 export type Service = {
   id: number;
   name: string;
   description: string;
   prices?: ApiGenderedPrices;
   length_prices?: LengthPrices;
+  specialist_prices?: SpecialistPrices;
   sort_order: number;
+};
+
+export type SectionPortfolioItem = {
+  photo_url: string;
+  description: string;
 };
 
 export type Section = {
@@ -25,6 +39,10 @@ export type Section = {
   slug: string;
   name: string;
   description: string;
+  table_template?: TableTemplate;
+  template_version?: number;
+  payload?: unknown;
+  portfolio?: SectionPortfolioItem[];
   services?: Service[];
 };
 
@@ -108,12 +126,27 @@ export const MAIN_SERVICE_SLUGS = [
   "nails",
   "brows-lashes",
   "cosmetology",
-  "makeup",
+] as const;
+
+export const ALL_SECTION_PARAMS = [
+  { categorySlug: "hair", subSlug: "strizhka" },
+  { categorySlug: "hair", subSlug: "okrashivanie" },
+  { categorySlug: "hair", subSlug: "ukladka" },
+  { categorySlug: "hair", subSlug: "uhod-volos" },
+  { categorySlug: "nails", subSlug: "manicure" },
+  { categorySlug: "nails", subSlug: "pedicure" },
+  { categorySlug: "nails", subSlug: "nail-extension" },
+  { categorySlug: "brows-lashes", subSlug: "brows-and-lashes" },
+  { categorySlug: "brows-lashes", subSlug: "lash-extension" },
+  { categorySlug: "brows-lashes", subSlug: "makeup" },
+  { categorySlug: "cosmetology", subSlug: "hydra-touch" },
+  { categorySlug: "cosmetology", subSlug: "ultraceuticals" },
+  { categorySlug: "cosmetology", subSlug: "face-massage" },
 ] as const;
 
 export const HAIR_SECTION_SLUGS = [
   "strizhka",
-  "ukladka",
   "okrashivanie",
+  "ukladka",
   "uhod-volos",
 ] as const;

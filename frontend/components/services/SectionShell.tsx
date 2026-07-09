@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { MainService, Section } from "@/lib/api/services";
 import { serviceDirectionHref } from "@/lib/api/services";
+import { SectionPortfolio } from "@/components/services/SectionPortfolio";
 
 type Props = {
   main: MainService;
@@ -96,6 +97,8 @@ export function SectionShell({ main, section, children }: Props) {
       ) : null}
 
       {children}
+
+      <SectionPortfolio items={section.portfolio ?? []} />
     </section>
   );
 }

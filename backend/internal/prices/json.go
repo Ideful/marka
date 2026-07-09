@@ -201,7 +201,18 @@ func ValidateLengthPrices(prices models.LengthPrices) error {
 	return nil
 }
 
-func MarshalServicePrices(gendered *models.GenderedPrices, length *models.LengthPrices) ([]byte, error) {
+func MarshalServicePrices(gendered *models.GenderedPrices, length *models.LengthPrices, specialist *models.SpecialistPrices) ([]byte, error) {
+	if specialist != nil {
+		normalized := NormalizeSpecialistPrices(*specialist)
+		return json.Marshal(struct {
+			Mode   string                `json:"mode"`
+			Prices models.SpecialistPrices `json:"prices"`
+		}{
+			Mode:   "specialist",
+			Prices: normalized,
+		})
+	}
+
 	if length != nil {
 		normalized := NormalizeLengthPrices(*length)
 		return json.Marshal(struct {
@@ -232,21 +243,30 @@ func MarshalServicePrices(gendered *models.GenderedPrices, length *models.Length
 	})
 }
 
-func parseServicePricesJSON(raw []byte) (*models.GenderedPrices, *models.LengthPrices) {
+func ParseServicePricesJSON(raw []byte) (*models.GenderedPrices, *models.LengthPrices, *models.SpecialistPrices) {
 	if len(raw) == 0 {
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	var envelope struct {
-		Mode   string                     `json:"mode"`
-		Short  int                        `json:"short"`
-		Medium int                        `json:"medium"`
-		Long   int                        `json:"long"`
-		Female map[string]json.RawMessage `json:"female"`
-		Male   map[string]json.RawMessage `json:"male"`
+		Mode      string                     `json:"mode"`
+		Short     int                        `json:"short"`
+		Medium    int                        `json:"medium"`
+		Long      int                        `json:"long"`
+		Female    map[string]json.RawMessage `json:"female"`
+		Male      map[string]json.RawMessage `json:"male"`
+		Prices    map[string]json.RawMessage `json:"prices"`
 	}
 	if err := json.Unmarshal(raw, &envelope); err != nil {
-		return nil, nil
+		return nil, nil, nil
+	}
+
+	if envelope.Mode == "specialist" {
+		specialist := parseSpecialistPricesMap(envelope.Prices)
+		if specialistHasValue(specialist) {
+			return nil, nil, &specialist
+		}
+		return nil, nil, nil
 	}
 
 	if envelope.Mode == "length" {
@@ -255,7 +275,7 @@ func parseServicePricesJSON(raw []byte) (*models.GenderedPrices, *models.LengthP
 			Medium: envelope.Medium,
 			Long:   envelope.Long,
 		})
-		return nil, &length
+		return nil, &length, nil
 	}
 
 	if envelope.Female == nil && envelope.Male == nil &&
@@ -265,12 +285,80 @@ func parseServicePricesJSON(raw []byte) (*models.GenderedPrices, *models.LengthP
 			Medium: envelope.Medium,
 			Long:   envelope.Long,
 		})
-		return nil, &length
+		return nil, &length, nil
 	}
 
 	prices := parsePricesJSON(raw)
 	if !PricesHasValue(prices) {
-		return nil, nil
+		return nil, nil, nil
 	}
-	return &prices, nil
+	return &prices, nil, nil
+}
+
+func parseServicePricesJSON(raw []byte) (*models.GenderedPrices, *models.LengthPrices) {
+	gendered, length, _ := ParseServicePricesJSON(raw)
+	return gendered, length
+}
+
+func parseSpecialistPricesMap(raw map[string]json.RawMessage) models.SpecialistPrices {
+	keys := map[string]*int{
+		"top_stylist": nil,
+		"stylist":     nil,
+		"top_master":  nil,
+		"master":      nil,
+	}
+	for key := range keys {
+		v := 0
+		keys[key] = &v
+	}
+	if raw != nil {
+		for key, ptr := range keys {
+			msg, ok := raw[key]
+			if !ok || len(msg) == 0 {
+				continue
+			}
+			*ptr = parsePriceValue(msg)
+		}
+	}
+	return models.SpecialistPrices{
+		TopStylist: *keys["top_stylist"],
+		Stylist:    *keys["stylist"],
+		TopMaster:  *keys["top_master"],
+		Master:     *keys["master"],
+	}
+}
+
+func specialistHasValue(p models.SpecialistPrices) bool {
+	return p.TopStylist > 0 || p.Stylist > 0 || p.TopMaster > 0 || p.Master > 0
+}
+
+func NormalizeSpecialistPrices(p models.SpecialistPrices) models.SpecialistPrices {
+	return models.SpecialistPrices{
+		TopStylist: maxInt(p.TopStylist, 0),
+		Stylist:    maxInt(p.Stylist, 0),
+		TopMaster:  maxInt(p.TopMaster, 0),
+		Master:     maxInt(p.Master, 0),
+	}
+}
+
+func ValidateSpecialistPrices(p models.SpecialistPrices) error {
+	check := func(field string, value int) error {
+		if value < 0 {
+			return fmt.Errorf("specialist_prices.%s must be a non-negative integer", field)
+		}
+		return nil
+	}
+	if err := check("top_stylist", p.TopStylist); err != nil {
+		return err
+	}
+	if err := check("stylist", p.Stylist); err != nil {
+		return err
+	}
+	if err := check("top_master", p.TopMaster); err != nil {
+		return err
+	}
+	if err := check("master", p.Master); err != nil {
+		return err
+	}
+	return nil
 }

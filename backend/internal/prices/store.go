@@ -67,7 +67,7 @@ func (s *Store) get(ctx context.Context, id int) (models.Service, error) {
 }
 
 func (s *Store) create(ctx context.Context, sectionID int, in models.Service) (models.Service, error) {
-	pricesRaw, err := MarshalServicePrices(in.Prices, in.LengthPrices)
+	pricesRaw, err := MarshalServicePrices(in.Prices, in.LengthPrices, in.SpecialistPrices)
 	if err != nil {
 		return models.Service{}, err
 	}
@@ -84,7 +84,7 @@ func (s *Store) create(ctx context.Context, sectionID int, in models.Service) (m
 }
 
 func (s *Store) update(ctx context.Context, id int, in models.Service) (models.Service, error) {
-	pricesRaw, err := MarshalServicePrices(in.Prices, in.LengthPrices)
+	pricesRaw, err := MarshalServicePrices(in.Prices, in.LengthPrices, in.SpecialistPrices)
 	if err != nil {
 		return models.Service{}, err
 	}
@@ -114,12 +114,13 @@ func (s *Store) delete(ctx context.Context, id int) error {
 }
 
 type serviceInput struct {
-	SectionID    int                   `json:"section_id"`
-	Name         string                `json:"name"`
-	Description  string                `json:"description"`
-	Prices       *models.GenderedPrices `json:"prices,omitempty"`
-	LengthPrices *models.LengthPrices   `json:"length_prices,omitempty"`
-	SortOrder    int                   `json:"sort_order"`
+	SectionID        int                      `json:"section_id"`
+	Name             string                   `json:"name"`
+	Description      string                   `json:"description"`
+	Prices           *models.GenderedPrices   `json:"prices,omitempty"`
+	LengthPrices     *models.LengthPrices     `json:"length_prices,omitempty"`
+	SpecialistPrices *models.SpecialistPrices `json:"specialist_prices,omitempty"`
+	SortOrder        int                      `json:"sort_order"`
 }
 
 type rowScanner interface {
@@ -132,7 +133,7 @@ func ScanService(row rowScanner) (models.Service, error) {
 	if err := row.Scan(&item.ID, &item.Name, &item.Description, &pricesRaw, &item.SortOrder); err != nil {
 		return models.Service{}, err
 	}
-	item.Prices, item.LengthPrices = parseServicePricesJSON(pricesRaw)
+	item.Prices, item.LengthPrices, item.SpecialistPrices = ParseServicePricesJSON(pricesRaw)
 	return item, nil
 }
 
@@ -155,10 +156,33 @@ func validateServiceInput(body serviceInput) error {
 
 	hasLength := body.LengthPrices != nil
 	hasTier := body.Prices != nil && PricesHasValue(NormalizePrices(*body.Prices))
+	hasSpecialist := body.SpecialistPrices != nil && specialistHasValue(NormalizeSpecialistPrices(*body.SpecialistPrices))
+
+	modes := 0
+	if hasLength {
+		modes++
+	}
+	if hasTier {
+		modes++
+	}
+	if hasSpecialist {
+		modes++
+	}
+	if modes > 1 {
+		return errors.New("only one price mode is allowed")
+	}
 
 	if hasLength {
 		normalized := NormalizeLengthPrices(*body.LengthPrices)
 		if err := ValidateLengthPrices(normalized); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if hasSpecialist {
+		normalized := NormalizeSpecialistPrices(*body.SpecialistPrices)
+		if err := ValidateSpecialistPrices(normalized); err != nil {
 			return err
 		}
 		return nil
@@ -172,7 +196,7 @@ func validateServiceInput(body serviceInput) error {
 		return nil
 	}
 
-	return errors.New("prices or length_prices is required")
+	return errors.New("prices, length_prices or specialist_prices is required")
 }
 
 func serviceFromInput(body serviceInput) models.Service {
@@ -185,6 +209,12 @@ func serviceFromInput(body serviceInput) models.Service {
 	if body.LengthPrices != nil {
 		normalized := NormalizeLengthPrices(*body.LengthPrices)
 		item.LengthPrices = &normalized
+		return item
+	}
+
+	if body.SpecialistPrices != nil {
+		normalized := NormalizeSpecialistPrices(*body.SpecialistPrices)
+		item.SpecialistPrices = &normalized
 		return item
 	}
 

@@ -1,5 +1,8 @@
 import type { GenderedPrices } from "./price-tiers";
 import type { LengthPrices } from "./length-prices";
+import type { SpecialistPrices } from "./specialist-prices";
+import type { Portfolio } from "./specialist";
+import type { TableTemplate } from "./table-templates";
 
 export type Service = {
   id: number;
@@ -7,6 +10,7 @@ export type Service = {
   description: string;
   prices?: GenderedPrices;
   length_prices?: LengthPrices;
+  specialist_prices?: SpecialistPrices;
   sort_order: number;
 };
 
@@ -16,6 +20,7 @@ export type ServiceInput = {
   description: string;
   prices?: GenderedPrices;
   length_prices?: LengthPrices;
+  specialist_prices?: SpecialistPrices;
   sort_order: number;
 };
 
@@ -24,6 +29,10 @@ export type Section = {
   slug: string;
   name: string;
   description: string;
+  table_template?: TableTemplate;
+  template_version?: number;
+  payload?: unknown;
+  portfolio?: Portfolio[];
   services?: Service[];
 };
 

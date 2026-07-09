@@ -1,40 +1,29 @@
 import { useState, type FormEvent } from "react";
 import {
-  HAIR_LENGTH_KEYS,
-  HAIR_LENGTH_LABELS,
-  emptyLengthPrices,
-  validateLengthPrices,
-  type LengthPrices,
-} from "../types/length-prices";
-import {
-  SPECIALIST_TIER_KEYS,
-  SPECIALIST_TIER_LABELS,
-  emptyGenderedPrices,
-  parsePriceInput,
-  pricesHasValue,
-  validateGenderedPrices,
-  type GenderedPrices,
-  type SpecialistTierKey,
-} from "../types/price-tiers";
+  SPECIALIST_TOGGLE_KEYS,
+  SPECIALIST_TOGGLE_LABELS,
+  emptySpecialistPrices,
+  specialistPricesHasValue,
+  validateSpecialistPrices,
+  type SpecialistPrices,
+  type SpecialistToggleKey,
+} from "../types/specialist-prices";
+import { usesServiceRows } from "../types/table-templates";
 import type { Service, ServiceInput } from "../types/services";
+import { parsePriceInput } from "../types/price-tiers";
 
 type Props = {
   title: string;
   sectionId: number;
-  sectionSlug?: string;
+  tableTemplate?: string;
   initial?: Service;
   onSubmit: (data: ServiceInput) => Promise<void>;
   onCancel: () => void;
 };
 
-function pricesFromInitial(initial?: Service): GenderedPrices {
-  if (initial?.prices) return initial.prices;
-  return emptyGenderedPrices();
-}
-
-function lengthPricesFromInitial(initial?: Service): LengthPrices {
-  if (initial?.length_prices) return initial.length_prices;
-  return emptyLengthPrices();
+function specialistPricesFromInitial(initial?: Service): SpecialistPrices {
+  if (initial?.specialist_prices) return initial.specialist_prices;
+  return emptySpecialistPrices();
 }
 
 function priceInputValue(value: number): string {
@@ -44,41 +33,24 @@ function priceInputValue(value: number): string {
 export function ServiceForm({
   title,
   sectionId,
-  sectionSlug,
+  tableTemplate,
   initial,
   onSubmit,
   onCancel,
 }: Props) {
-  const useLengthPrices = sectionSlug === "okrashivanie";
+  const useSpecialistPrices = usesServiceRows(tableTemplate as never);
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [sortOrder, setSortOrder] = useState(initial?.sort_order ?? 0);
-  const [prices, setPrices] = useState<GenderedPrices>(() => pricesFromInitial(initial));
-  const [lengthPrices, setLengthPrices] = useState<LengthPrices>(() =>
-    lengthPricesFromInitial(initial),
+  const [specialistPrices, setSpecialistPrices] = useState<SpecialistPrices>(() =>
+    specialistPricesFromInitial(initial),
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function updatePrice(
-    gender: "female" | "male",
-    tier: SpecialistTierKey,
-    raw: string,
-  ) {
-    if (raw !== "" && !/^\d*$/.test(raw)) {
-      return;
-    }
-    setPrices((prev) => ({
-      ...prev,
-      [gender]: { ...prev[gender], [tier]: parsePriceInput(raw) },
-    }));
-  }
-
-  function updateLengthPrice(key: keyof LengthPrices, raw: string) {
-    if (raw !== "" && !/^\d*$/.test(raw)) {
-      return;
-    }
-    setLengthPrices((prev) => ({ ...prev, [key]: parsePriceInput(raw) }));
+  function updateSpecialistPrice(key: SpecialistToggleKey, raw: string) {
+    if (raw !== "" && !/^\d*$/.test(raw)) return;
+    setSpecialistPrices((prev) => ({ ...prev, [key]: parsePriceInput(raw) }));
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -88,22 +60,19 @@ export function ServiceForm({
       return;
     }
 
-    if (useLengthPrices) {
-      const priceError = validateLengthPrices(lengthPrices);
-      if (priceError) {
-        setError(priceError);
-        return;
-      }
-    } else {
-      const priceError = validateGenderedPrices(prices);
-      if (priceError) {
-        setError(priceError);
-        return;
-      }
-      if (!pricesHasValue(prices)) {
-        setError("Укажите хотя бы одну цену больше 0");
-        return;
-      }
+    if (!useSpecialistPrices) {
+      setError("Этот раздел редактируется через матрицу прайса");
+      return;
+    }
+
+    const priceError = validateSpecialistPrices(specialistPrices);
+    if (priceError) {
+      setError(priceError);
+      return;
+    }
+    if (!specialistPricesHasValue(specialistPrices)) {
+      setError("Укажите хотя бы одну цену больше 0");
+      return;
     }
 
     setSaving(true);
@@ -114,7 +83,7 @@ export function ServiceForm({
         name: name.trim(),
         description: description.trim(),
         sort_order: sortOrder,
-        ...(useLengthPrices ? { length_prices: lengthPrices } : { prices }),
+        specialist_prices: specialistPrices,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка сохранения");
@@ -165,73 +134,36 @@ export function ServiceForm({
       </div>
 
       <div className="form-field">
-        <span className="form-label">
-          {useLengthPrices ? "Цены по длине волос (руб.)" : "Цены (руб., только цифры)"}
-        </span>
+        <span className="form-label">Цены по типу специалиста (руб.)</span>
         <p className="sections-editor-hint">Символ ₽ на сайте добавится автоматически.</p>
-        {useLengthPrices ? (
-          <div className="sections-table-wrap">
-            <table className="sections-table price-matrix">
-              <thead>
-                <tr>
-                  {HAIR_LENGTH_KEYS.map((key) => (
-                    <th key={key}>{HAIR_LENGTH_LABELS[key]}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  {HAIR_LENGTH_KEYS.map((key) => (
-                    <td key={key}>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        value={priceInputValue(lengthPrices[key])}
-                        placeholder="6000"
-                        disabled={saving}
-                        onChange={(e) => updateLengthPrice(key, e.target.value)}
-                      />
-                    </td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="sections-table-wrap">
-            <table className="sections-table price-matrix">
-              <thead>
-                <tr>
-                  <th>Пол</th>
-                  {SPECIALIST_TIER_KEYS.map((key) => (
-                    <th key={key}>{SPECIALIST_TIER_LABELS[key]}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {(["female", "male"] as const).map((gender) => (
-                  <tr key={gender}>
-                    <td>{gender === "female" ? "Женщины" : "Мужчины"}</td>
-                    {SPECIALIST_TIER_KEYS.map((key) => (
-                      <td key={key}>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={priceInputValue(prices[gender][key])}
-                          placeholder="2000"
-                          disabled={saving}
-                          onChange={(e) => updatePrice(gender, key, e.target.value)}
-                        />
-                      </td>
-                    ))}
-                  </tr>
+        <div className="sections-table-wrap">
+          <table className="sections-table price-matrix">
+            <thead>
+              <tr>
+                {SPECIALIST_TOGGLE_KEYS.map((key) => (
+                  <th key={key}>{SPECIALIST_TOGGLE_LABELS[key]}</th>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                {SPECIALIST_TOGGLE_KEYS.map((key) => (
+                  <td key={key}>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={priceInputValue(specialistPrices[key])}
+                      placeholder="2000"
+                      disabled={saving}
+                      onChange={(e) => updateSpecialistPrice(key, e.target.value)}
+                    />
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="form-actions">
