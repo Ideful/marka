@@ -9,7 +9,7 @@ import {
   type SpecialistToggleKey,
 } from "@/lib/table-templates";
 import { SectionShell } from "@/components/services/SectionShell";
-import { BookingConsultationLink, PriceMatrixTable } from "@/components/services/templates/shared";
+import { PriceMatrixTable } from "@/components/services/templates/shared";
 
 type Props = {
   main: MainService;
@@ -60,14 +60,6 @@ export function ServiceSinglePriceBySpecialistView({ main, section }: Props) {
         ) : (
           <PriceMatrixTable headers={["Услуга", "Стоимость"]} rows={tableRows} />
         )}
-
-        {section.description ? (
-          <p className="text-center text-base leading-relaxed text-ink-muted md:text-lg">
-            {section.description}
-          </p>
-        ) : null}
-
-        <BookingConsultationLink />
       </div>
     </SectionShell>
   );

@@ -29,6 +29,7 @@ func (s *Store) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /main-services/{slug}/sections/{sectionSlug}", s.handleGetSection)
 	mux.HandleFunc("PUT /main-services/{slug}/sections/{sectionSlug}/payload", s.handlePutSectionPayload)
 	mux.HandleFunc("PUT /main-services/{slug}/sections/{sectionSlug}/portfolio", s.handlePutSectionPortfolio)
+	mux.HandleFunc("PUT /main-services/{slug}/sections/{sectionSlug}/description", s.handlePutSectionDescription)
 }
 
 func (s *Store) listMainServices(ctx context.Context) ([]models.MainService, error) {
@@ -356,6 +357,56 @@ func (s *Store) handlePutSectionPortfolio(w http.ResponseWriter, r *http.Request
 	}
 
 	section, err := s.updateSectionPortfolio(r.Context(), mainSlug, sectionSlug, body.Portfolio)
+	if errors.Is(err, httputil.ErrNotFound) {
+		httputil.WriteAPIError(w, http.StatusNotFound, "section not found")
+		return
+	}
+	if err != nil {
+		httputil.WriteAPIError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	httputil.WriteJSON(w, http.StatusOK, section)
+}
+
+type descriptionInput struct {
+	Description string `json:"description"`
+}
+
+func (s *Store) updateSectionDescription(ctx context.Context, mainSlug, sectionSlug, description string) (models.Section, error) {
+	if _, ok := SectionMetaBySlug(mainSlug, sectionSlug); !ok {
+		return models.Section{}, httputil.ErrNotFound
+	}
+
+	tag, err := s.pool.Exec(ctx, `
+		UPDATE sections st
+		SET description = $3
+		FROM main_services ms
+		WHERE st.main_service_id = ms.id
+		  AND ms.slug = $1
+		  AND st.slug = $2
+	`, mainSlug, sectionSlug, description)
+	if err != nil {
+		return models.Section{}, err
+	}
+	if tag.RowsAffected() == 0 {
+		return models.Section{}, httputil.ErrNotFound
+	}
+
+	_, section, err := s.getSection(ctx, mainSlug, sectionSlug)
+	return section, err
+}
+
+func (s *Store) handlePutSectionDescription(w http.ResponseWriter, r *http.Request) {
+	mainSlug := r.PathValue("slug")
+	sectionSlug := r.PathValue("sectionSlug")
+
+	var body descriptionInput
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		httputil.WriteAPIError(w, http.StatusBadRequest, "invalid json")
+		return
+	}
+
+	section, err := s.updateSectionDescription(r.Context(), mainSlug, sectionSlug, body.Description)
 	if errors.Is(err, httputil.ErrNotFound) {
 		httputil.WriteAPIError(w, http.StatusNotFound, "section not found")
 		return

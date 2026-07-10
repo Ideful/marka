@@ -18,23 +18,51 @@ export function BookingConsultationLink() {
 export function PriceMatrixTable({
   headers,
   rows,
+  layout = "default",
 }: {
   headers: string[];
   rows: string[][];
+  layout?: "default" | "service-length";
 }) {
   if (rows.length === 0) return null;
 
+  const isServiceLength = layout === "service-length";
+  const firstColClass = isServiceLength
+    ? "px-3 py-3 text-left text-xs font-medium uppercase tracking-wide sm:text-sm"
+    : "w-[42%] px-2 py-3 text-left text-xs font-medium uppercase tracking-wide sm:px-3 sm:text-sm";
+  const dataColClass = isServiceLength
+    ? "px-2 py-3 text-center align-middle text-xs font-medium uppercase tracking-wide sm:px-3 sm:text-sm"
+    : "px-1 py-3 text-center text-xs font-medium uppercase tracking-wide sm:px-2 sm:text-sm";
+  const firstCellClass = isServiceLength
+    ? "px-3 py-3 text-left align-middle text-xs font-medium leading-snug text-ink sm:text-sm"
+    : "px-2 py-3 text-left text-xs font-medium leading-snug text-ink sm:px-3 sm:text-sm";
+  const dataCellClass = isServiceLength
+    ? "px-2 py-3 text-center align-middle text-xs font-medium tabular-nums text-ink sm:px-3 sm:text-sm"
+    : "px-1 py-3 text-center text-xs font-medium tabular-nums text-ink sm:px-2 sm:text-sm";
+
   return (
-    <div className="overflow-hidden rounded-xl border border-ink/15" data-service-price-table>
-      <table className="w-full text-center text-sm">
+    <div className="rounded-xl border border-ink/15" data-service-price-table>
+      <table className="w-full table-fixed text-sm">
+        {isServiceLength ? (
+          <colgroup>
+            <col className="w-[32%]" />
+            <col className="w-[23%]" />
+            <col className="w-[23%]" />
+            <col className="w-[22%]" />
+          </colgroup>
+        ) : null}
         <thead>
           <tr className="bg-ink-muted text-white">
-            {headers.map((header) => (
+            {headers.map((header, index) => (
               <th
                 key={header}
-                className="whitespace-nowrap px-3 py-3 font-medium uppercase tracking-wide"
+                className={index === 0 ? firstColClass : dataColClass}
               >
-                {header}
+                {isServiceLength && index > 0 ? (
+                  <span className="mx-auto block w-full text-center">{header}</span>
+                ) : (
+                  header
+                )}
               </th>
             ))}
           </tr>
@@ -45,9 +73,13 @@ export function PriceMatrixTable({
               {cells.map((cell, cellIndex) => (
                 <td
                   key={`${cell}-${cellIndex}`}
-                  className="px-3 py-3 font-medium tabular-nums text-ink"
+                  className={cellIndex === 0 ? firstCellClass : dataCellClass}
                 >
-                  {cell}
+                  {isServiceLength && cellIndex > 0 ? (
+                    <span className="mx-auto block w-full text-center">{cell}</span>
+                  ) : (
+                    cell
+                  )}
                 </td>
               ))}
             </tr>

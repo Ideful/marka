@@ -23,6 +23,9 @@ func migrateCatalog(ctx context.Context, pool *pgxpool.Pool) error {
 	if err := migrateHairPayloads(ctx, pool); err != nil {
 		return err
 	}
+	if err := removeBarberFromUkladkaPayload(ctx, pool); err != nil {
+		return err
+	}
 	if err := cleanupMatrixSectionServices(ctx, pool); err != nil {
 		return err
 	}
@@ -234,6 +237,37 @@ func migrateUkladkaPayload(ctx context.Context, pool *pgxpool.Pool) error {
 		}
 	}
 
+	return saveSectionPayload(ctx, pool, "hair", "ukladka", data)
+}
+
+func removeBarberFromUkladkaPayload(ctx context.Context, pool *pgxpool.Pool) error {
+	var payloadRaw []byte
+	err := pool.QueryRow(ctx, `
+		SELECT st.payload
+		FROM sections st
+		JOIN main_services ms ON ms.id = st.main_service_id
+		WHERE ms.slug = 'hair' AND st.slug = 'ukladka'
+	`).Scan(&payloadRaw)
+	if err != nil {
+		return fmt.Errorf("load ukladka payload: %w", err)
+	}
+
+	var data catalog.RankVariantPayload
+	if err := json.Unmarshal(payloadRaw, &data); err != nil {
+		return fmt.Errorf("parse ukladka payload: %w", err)
+	}
+
+	filtered := make([]catalog.RankVariantRow, 0, len(data.Rows))
+	for _, row := range data.Rows {
+		if row.Rank != "barber" {
+			filtered = append(filtered, row)
+		}
+	}
+	if len(filtered) == len(data.Rows) {
+		return nil
+	}
+
+	data.Rows = filtered
 	return saveSectionPayload(ctx, pool, "hair", "ukladka", data)
 }
 

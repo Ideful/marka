@@ -4,14 +4,14 @@ import type { MainService, Section } from "@/lib/api/services";
 import { formatPriceRub } from "@/lib/format-price";
 import {
   UKLADKA_RANK_ORDER,
-  VARIANT_LABELS,
+  VARIANT_SHORT_LABELS,
   nullablePrice,
   parsePayload,
   rankLabel,
   type RankVariantPayload,
 } from "@/lib/table-templates";
 import { SectionShell } from "@/components/services/SectionShell";
-import { BookingConsultationLink, PriceMatrixTable } from "@/components/services/templates/shared";
+import { PriceMatrixTable } from "@/components/services/templates/shared";
 
 type Props = {
   main: MainService;
@@ -25,7 +25,7 @@ export function RankVariantMatrixView({ main, section }: Props) {
     : ["day", "evening"];
   const rows = payload.rows ?? [];
 
-  const headers = ["Должность", ...variants.map((key) => VARIANT_LABELS[key] ?? key)];
+  const headers = ["Должность", ...variants.map((key) => VARIANT_SHORT_LABELS[key] ?? key)];
   const tableRows = UKLADKA_RANK_ORDER.map((rankKey) => {
     const row = rows.find((item) => item.rank === rankKey);
     return [
@@ -36,15 +36,11 @@ export function RankVariantMatrixView({ main, section }: Props) {
 
   return (
     <SectionShell main={main} section={section}>
-      <div className="space-y-8">
-        {tableRows.length === 0 ? (
-          <p className="text-center text-ink-muted">Прайс для укладок скоро появится.</p>
-        ) : (
-          <PriceMatrixTable headers={headers} rows={tableRows} />
-        )}
-
-        <BookingConsultationLink />
-      </div>
+      {tableRows.length === 0 ? (
+        <p className="text-center text-ink-muted">Прайс для укладок скоро появится.</p>
+      ) : (
+        <PriceMatrixTable headers={headers} rows={tableRows} />
+      )}
     </SectionShell>
   );
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { SiteLogo } from "@/components/layout/SiteLogo";
 import { salonConfig } from "@/lib/domain/salon-config";
 import { bookingHeaderButtonClass, bookingOnlineButtonClass, useBookingButtonHighlight } from "@/lib/use-booking-button-highlight";
 
@@ -43,13 +44,7 @@ export function SiteHeader() {
     <>
       <header className="sticky top-0 z-40 border-b border-ink/5 bg-sand/90 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 md:gap-4 md:px-6">
-          <Link
-            href="/"
-            className="inline-flex min-h-[44px] min-w-[44px] items-center font-semibold uppercase tracking-[0.2em] text-ink"
-            onClick={closeMenu}
-          >
-            Марка
-          </Link>
+          <SiteLogo onClick={closeMenu} />
 
           <nav
             className="hidden flex-wrap items-center justify-end gap-x-6 gap-y-2 text-sm text-ink-muted md:flex"

@@ -83,7 +83,15 @@ export function SectionPayloadEditor({
     setSaving(true);
     setError(null);
     try {
-      await onSave(payload);
+      let toSave = payload;
+      if (tableTemplate === "rank_variant_matrix") {
+        const data = (payload ?? { rows: [] }) as RankVariantPayload;
+        toSave = {
+          ...data,
+          rows: (data.rows ?? []).filter((row) => row.rank !== "barber"),
+        };
+      }
+      await onSave(toSave);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка сохранения");
     } finally {
@@ -165,7 +173,7 @@ type RankVariantPayload = {
 function renderRankVariantMatrix(payload: unknown, setPayload: (value: unknown) => void) {
   const data = (payload ?? { variants: [], rows: [] }) as RankVariantPayload;
   const variants = data.variants?.length ? data.variants : ["day", "evening"];
-  const rows = data.rows ?? [];
+  const rows = (data.rows ?? []).filter((row) => row.rank !== "barber");
 
   return (
     <table className="sections-table price-matrix">
@@ -178,7 +186,7 @@ function renderRankVariantMatrix(payload: unknown, setPayload: (value: unknown) 
         </tr>
       </thead>
       <tbody>
-        {rows.map((row, rowIndex) => (
+        {rows.map((row) => (
           <tr key={row.rank}>
             <td>{rankLabel(row.rank)}</td>
             {variants.map((variant) => (
@@ -187,6 +195,8 @@ function renderRankVariantMatrix(payload: unknown, setPayload: (value: unknown) 
                   value={row.prices?.[variant]}
                   onChange={(price) => {
                     const next = structuredClone(data);
+                    const rowIndex = next.rows.findIndex((item) => item.rank === row.rank);
+                    if (rowIndex === -1) return;
                     next.rows[rowIndex].prices[variant] = price;
                     setPayload(next);
                   }}

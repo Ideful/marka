@@ -31,6 +31,17 @@ export function updateSectionPortfolio(
   });
 }
 
+export function updateSectionDescription(
+  mainSlug: string,
+  sectionSlug: string,
+  description: string,
+) {
+  return apiFetch<Section>(`/main-services/${mainSlug}/sections/${sectionSlug}/description`, {
+    method: "PUT",
+    body: JSON.stringify({ description }),
+  });
+}
+
 export function listServices(sectionId: number) {
   return apiFetch<Service[]>(`/prices?section_id=${sectionId}`);
 }

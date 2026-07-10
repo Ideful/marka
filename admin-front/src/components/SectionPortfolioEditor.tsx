@@ -74,13 +74,13 @@ export function SectionPortfolioEditor({ initialPortfolio, onSave }: Props) {
   return (
     <form onSubmit={handleSubmit} className="specialist-form">
       <div className="sections-editor-head">
-        <h2>Портфолио раздела</h2>
+        <h2>Примеры работ</h2>
         <button type="button" className="btn btn-sm" disabled={busy} onClick={addPortfolio}>
           + Добавить фото
         </button>
       </div>
       <p className="sections-editor-hint">
-        Фото работ для этого раздела (стрижки, окрашивания и т.д.). Показывается на странице услуги.
+        Фото работ для этого раздела. Показываются на странице услуги после описания.
       </p>
       {error ? <div className="alert alert-error">{error}</div> : null}
       <div className="sections-table-wrap">

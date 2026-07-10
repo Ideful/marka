@@ -10,7 +10,7 @@ import {
   type RankGenderPayload,
 } from "@/lib/table-templates";
 import { SectionShell } from "@/components/services/SectionShell";
-import { BookingConsultationLink, PriceMatrixTable } from "@/components/services/templates/shared";
+import { PriceMatrixTable } from "@/components/services/templates/shared";
 
 type Props = {
   main: MainService;
@@ -34,21 +34,11 @@ export function RankGenderMatrixView({ main, section }: Props) {
 
   return (
     <SectionShell main={main} section={section}>
-      <div className="space-y-8">
-        {tableRows.length === 0 ? (
-          <p className="text-center text-ink-muted">Прайс для этого раздела скоро появится.</p>
-        ) : (
-          <PriceMatrixTable headers={["Должность", "Женская", "Мужская"]} rows={tableRows} />
-        )}
-
-        {section.description ? (
-          <p className="text-center text-base leading-relaxed text-ink-muted md:text-lg">
-            {section.description}
-          </p>
-        ) : null}
-
-        <BookingConsultationLink />
-      </div>
+      {tableRows.length === 0 ? (
+        <p className="text-center text-ink-muted">Прайс для этого раздела скоро появится.</p>
+      ) : (
+        <PriceMatrixTable headers={["Должность", "Женская", "Мужская"]} rows={tableRows} />
+      )}
     </SectionShell>
   );
 }

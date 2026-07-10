@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { MainService, Section } from "@/lib/api/services";
 import { serviceDirectionHref } from "@/lib/api/services";
+import { SectionDescription } from "@/components/services/SectionDescription";
 import { SectionPortfolio } from "@/components/services/SectionPortfolio";
+import { BookingConsultationLink } from "@/components/services/templates/shared";
 
 type Props = {
   main: MainService;
@@ -67,7 +69,7 @@ export function SectionShell({ main, section, children }: Props) {
   const secondRow = main.services.slice(FIRST_ROW_COUNT);
 
   return (
-    <section className="mx-auto max-w-lg space-y-8">
+    <section className="mx-auto max-w-2xl space-y-8 px-1 sm:px-0">
       <nav className="text-center text-xs text-ink-muted" aria-label="Хлебные крошки">
         <Link href="/" className="hover:text-ink hover:underline">
           Главная
@@ -98,7 +100,11 @@ export function SectionShell({ main, section, children }: Props) {
 
       {children}
 
+      <SectionDescription text={section.description} />
+
       <SectionPortfolio items={section.portfolio ?? []} />
+
+      <BookingConsultationLink />
     </section>
   );
 }

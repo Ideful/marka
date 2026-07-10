@@ -72,6 +72,11 @@ export const VARIANT_LABELS: Record<string, string> = {
   evening: "Укладка вечерняя",
 };
 
+export const VARIANT_SHORT_LABELS: Record<string, string> = {
+  day: "Дневная",
+  evening: "Вечерняя",
+};
+
 export const SPECIALIST_TOGGLE_KEYS = [
   "top_stylist",
   "stylist",
@@ -102,7 +107,6 @@ export const UKLADKA_RANK_ORDER = [
   "stylist",
   "top_master",
   "master",
-  "barber",
 ] as const;
 
 export function rankLabel(key: string): string {

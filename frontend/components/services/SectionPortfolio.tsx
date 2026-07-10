@@ -13,7 +13,7 @@ export function SectionPortfolio({ items }: Props) {
   return (
     <div className="space-y-4">
       <h2 className="text-center text-lg font-medium uppercase tracking-wide text-ink">
-        Портфолио работ
+        Примеры работ
       </h2>
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
         {visible.map((item, index) => {

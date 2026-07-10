@@ -120,7 +120,7 @@ var strizhkaRanks = []string{
 }
 
 var ukladkaRanks = []string{
-	"top_stylist", "stylist", "top_master", "master", "barber",
+	"top_stylist", "stylist", "top_master", "master",
 }
 
 var specialistToggleOptions = []string{

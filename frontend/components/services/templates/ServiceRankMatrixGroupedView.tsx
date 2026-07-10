@@ -9,7 +9,7 @@ import {
   type ServiceRankMatrixGroupedPayload,
 } from "@/lib/table-templates";
 import { SectionShell } from "@/components/services/SectionShell";
-import { BookingConsultationLink, PriceMatrixTable } from "@/components/services/templates/shared";
+import { PriceMatrixTable } from "@/components/services/templates/shared";
 
 type Props = {
   main: MainService;
@@ -44,8 +44,6 @@ export function ServiceRankMatrixGroupedView({ main, section }: Props) {
             );
           })
         )}
-
-        <BookingConsultationLink />
       </div>
     </SectionShell>
   );

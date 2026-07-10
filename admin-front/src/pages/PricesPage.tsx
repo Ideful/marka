@@ -5,10 +5,12 @@ import {
   getSection,
   listMainServices,
   listServices,
+  updateSectionDescription,
   updateSectionPayload,
   updateSectionPortfolio,
   updateService,
 } from "../api/services";
+import { SectionDescriptionEditor } from "../components/SectionDescriptionEditor";
 import { SectionPayloadEditor } from "../components/SectionPayloadEditor";
 import { SectionPortfolioEditor } from "../components/SectionPortfolioEditor";
 import { ServiceForm } from "../components/ServiceForm";
@@ -26,6 +28,7 @@ export function PricesPage() {
   const [selectedSectionId, setSelectedSectionId] = useState<number | null>(null);
   const [tableTemplate, setTableTemplate] = useState<TableTemplate | undefined>();
   const [sectionPayload, setSectionPayload] = useState<unknown>({});
+  const [sectionDescription, setSectionDescription] = useState("");
   const [sectionPortfolio, setSectionPortfolio] = useState<Portfolio[]>([]);
   const [items, setItems] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,6 +90,7 @@ export function PricesPage() {
     if (!selectedSection) {
       setItems([]);
       setSectionPayload({});
+      setSectionDescription("");
       setSectionPortfolio([]);
       setTableTemplate(undefined);
       return;
@@ -98,6 +102,7 @@ export function PricesPage() {
       const section = await getSection(selectedSection.mainSlug, selectedSection.slug);
       setTableTemplate(section.table_template);
       setSectionPayload(section.payload ?? {});
+      setSectionDescription(section.description ?? "");
       setSectionPortfolio(section.portfolio ?? []);
 
       if (usesServiceRows(section.table_template)) {
@@ -152,6 +157,16 @@ export function PricesPage() {
       payload,
     );
     setSectionPayload(updated.payload ?? payload);
+  }
+
+  async function handleDescriptionSave(description: string) {
+    if (!selectedSection) return;
+    const updated = await updateSectionDescription(
+      selectedSection.mainSlug,
+      selectedSection.slug,
+      description,
+    );
+    setSectionDescription(updated.description ?? description);
   }
 
   async function handlePortfolioSave(portfolio: Portfolio[]) {
@@ -226,9 +241,6 @@ export function PricesPage() {
             </div>
           </div>
         </div>
-        {selectedSection?.description ? (
-          <p className="filters-hint">{selectedSection.description}</p>
-        ) : null}
       </div>
 
       {error ? <div className="alert alert-error">{error}</div> : null}
@@ -243,14 +255,6 @@ export function PricesPage() {
         </div>
       ) : (
         <>
-          <div className="card">
-            <SectionPortfolioEditor
-              key={`${selectedSection.mainSlug}-${selectedSection.slug}`}
-              initialPortfolio={sectionPortfolio}
-              onSave={handlePortfolioSave}
-            />
-          </div>
-
           {isPayloadSection && tableTemplate ? (
             <div className="card">
               <SectionPayloadEditor
@@ -316,6 +320,23 @@ export function PricesPage() {
               )}
             </div>
           )}
+
+          <div className="card">
+            <SectionDescriptionEditor
+              key={`desc-${selectedSection.mainSlug}-${selectedSection.slug}`}
+              sectionName={selectedSection.name}
+              initialDescription={sectionDescription}
+              onSave={handleDescriptionSave}
+            />
+          </div>
+
+          <div className="card">
+            <SectionPortfolioEditor
+              key={`${selectedSection.mainSlug}-${selectedSection.slug}`}
+              initialPortfolio={sectionPortfolio}
+              onSave={handlePortfolioSave}
+            />
+          </div>
         </>
       )}
 
