@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import type { MainService, Section } from "@/lib/api/services";
 import { formatPriceRub } from "@/lib/format-price";
 import {
-  SPECIALIST_TOGGLE_KEYS,
+  specialistToggleKeysForMain,
   SPECIALIST_TOGGLE_LABELS,
   type SpecialistToggleKey,
 } from "@/lib/table-templates";
@@ -18,7 +18,8 @@ type Props = {
 
 export function ServiceSinglePriceBySpecialistView({ main, section }: Props) {
   const selectId = useId();
-  const [tier, setTier] = useState<SpecialistToggleKey>("master");
+  const toggleKeys = specialistToggleKeysForMain(main.slug);
+  const [tier, setTier] = useState<SpecialistToggleKey>(toggleKeys[0]);
   const services = section.services ?? [];
 
   const tableRows = services.map((service) => [
@@ -38,13 +39,13 @@ export function ServiceSinglePriceBySpecialistView({ main, section }: Props) {
             value={tier}
             onChange={(e) => {
               const value = e.target.value;
-              if ((SPECIALIST_TOGGLE_KEYS as readonly string[]).includes(value)) {
+              if ((toggleKeys as readonly string[]).includes(value)) {
                 setTier(value as SpecialistToggleKey);
               }
             }}
             className="w-full cursor-pointer appearance-none rounded-xl border border-ink/20 bg-white px-4 py-3.5 pr-12 text-center text-sm font-medium uppercase tracking-wide text-ink shadow-sm transition hover:border-ink/35 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
           >
-            {SPECIALIST_TOGGLE_KEYS.map((key) => (
+            {toggleKeys.map((key) => (
               <option key={key} value={key}>
                 {SPECIALIST_TOGGLE_LABELS[key]}
               </option>

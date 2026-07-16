@@ -28,16 +28,16 @@ export function PriceMatrixTable({
 
   const isServiceLength = layout === "service-length";
   const firstColClass = isServiceLength
-    ? "px-3 py-3 text-left text-xs font-medium uppercase tracking-wide sm:text-sm"
+    ? "px-3 py-2.5 text-left text-[10px] font-medium uppercase tracking-wide sm:text-xs"
     : "w-[42%] px-2 py-3 text-left text-xs font-medium uppercase tracking-wide sm:px-3 sm:text-sm";
   const dataColClass = isServiceLength
-    ? "px-2 py-3 text-center align-middle text-xs font-medium uppercase tracking-wide sm:px-3 sm:text-sm"
+    ? "px-2 py-2.5 text-center align-middle text-[10px] font-medium uppercase tracking-wide sm:px-3 sm:text-xs"
     : "px-1 py-3 text-center text-xs font-medium uppercase tracking-wide sm:px-2 sm:text-sm";
   const firstCellClass = isServiceLength
-    ? "px-3 py-3 text-left align-middle text-xs font-medium leading-snug text-ink sm:text-sm"
+    ? "px-3 py-2.5 text-left align-middle text-[10px] font-medium leading-snug text-ink sm:text-xs"
     : "px-2 py-3 text-left text-xs font-medium leading-snug text-ink sm:px-3 sm:text-sm";
   const dataCellClass = isServiceLength
-    ? "px-2 py-3 text-center align-middle text-xs font-medium tabular-nums text-ink sm:px-3 sm:text-sm"
+    ? "px-2 py-2.5 text-center align-middle text-[10px] font-medium tabular-nums text-ink sm:px-3 sm:text-xs"
     : "px-1 py-3 text-center text-xs font-medium tabular-nums text-ink sm:px-2 sm:text-sm";
 
   return (

@@ -358,6 +358,7 @@ export function PricesPage() {
             <ServiceForm
               title={modal === "create" ? "Новая услуга" : "Редактирование услуги"}
               sectionId={selectedSectionId}
+              mainSlug={selectedSection?.mainSlug}
               tableTemplate={tableTemplate}
               initial={editing ?? undefined}
               onSubmit={modal === "create" ? handleCreate : handleUpdate}

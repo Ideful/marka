@@ -26,6 +26,9 @@ func migrateCatalog(ctx context.Context, pool *pgxpool.Pool) error {
 	if err := removeBarberFromUkladkaPayload(ctx, pool); err != nil {
 		return err
 	}
+	if err := migrateNailsSpecialistPrices(ctx, pool); err != nil {
+		return err
+	}
 	if err := cleanupMatrixSectionServices(ctx, pool); err != nil {
 		return err
 	}
@@ -269,6 +272,65 @@ func removeBarberFromUkladkaPayload(ctx context.Context, pool *pgxpool.Pool) err
 
 	data.Rows = filtered
 	return saveSectionPayload(ctx, pool, "hair", "ukladka", data)
+}
+
+// migrateNailsSpecialistPrices remaps nail service specialist tiers:
+// master / top_master stay; stylist → leading_specialist; top_stylist → instructor_expert.
+func migrateNailsSpecialistPrices(ctx context.Context, pool *pgxpool.Pool) error {
+	rows, err := pool.Query(ctx, `
+		SELECT s.id, s.prices
+		FROM services s
+		JOIN sections st ON st.id = s.section_id
+		JOIN main_services ms ON ms.id = st.main_service_id
+		WHERE ms.slug = 'nails'
+	`)
+	if err != nil {
+		return fmt.Errorf("list nails services: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int
+		var pricesRaw []byte
+		if err := rows.Scan(&id, &pricesRaw); err != nil {
+			return err
+		}
+
+		_, _, specialist := prices.ParseServicePricesJSON(pricesRaw)
+		if specialist == nil {
+			continue
+		}
+
+		next := prices.NormalizeSpecialistPrices(*specialist)
+		changed := false
+
+		if next.LeadingSpecialist == 0 && next.Stylist > 0 {
+			next.LeadingSpecialist = next.Stylist
+			changed = true
+		}
+		if next.InstructorExpert == 0 && next.TopStylist > 0 {
+			next.InstructorExpert = next.TopStylist
+			changed = true
+		}
+		if next.TopStylist != 0 || next.Stylist != 0 {
+			next.TopStylist = 0
+			next.Stylist = 0
+			changed = true
+		}
+		if !changed {
+			continue
+		}
+
+		raw, err := prices.MarshalServicePrices(nil, nil, &next)
+		if err != nil {
+			return fmt.Errorf("marshal nails service %d prices: %w", id, err)
+		}
+		if _, err := pool.Exec(ctx, `UPDATE services SET prices = $2::jsonb WHERE id = $1`, id, raw); err != nil {
+			return fmt.Errorf("update nails service %d prices: %w", id, err)
+		}
+	}
+
+	return rows.Err()
 }
 
 func rankPriceFromGendered(gendered models.GenderedPrices, rank string) int {

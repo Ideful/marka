@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from "react";
 import {
-  SPECIALIST_TOGGLE_KEYS,
-  SPECIALIST_TOGGLE_LABELS,
   emptySpecialistPrices,
+  normalizeSpecialistPrices,
   specialistPricesHasValue,
+  specialistToggleKeysForMain,
+  SPECIALIST_TOGGLE_LABELS,
   validateSpecialistPrices,
   type SpecialistPrices,
   type SpecialistToggleKey,
@@ -15,35 +16,37 @@ import { parsePriceInput } from "../types/price-tiers";
 type Props = {
   title: string;
   sectionId: number;
+  mainSlug?: string;
   tableTemplate?: string;
   initial?: Service;
   onSubmit: (data: ServiceInput) => Promise<void>;
   onCancel: () => void;
 };
 
-function specialistPricesFromInitial(initial?: Service): SpecialistPrices {
-  if (initial?.specialist_prices) return initial.specialist_prices;
-  return emptySpecialistPrices();
+function specialistPricesFromInitial(initial: Service | undefined, mainSlug?: string): SpecialistPrices {
+  return normalizeSpecialistPrices(initial?.specialist_prices, mainSlug);
 }
 
-function priceInputValue(value: number): string {
-  return value > 0 ? String(value) : "";
+function priceInputValue(value: number | undefined): string {
+  return value && value > 0 ? String(value) : "";
 }
 
 export function ServiceForm({
   title,
   sectionId,
+  mainSlug,
   tableTemplate,
   initial,
   onSubmit,
   onCancel,
 }: Props) {
   const useSpecialistPrices = usesServiceRows(tableTemplate as never);
+  const toggleKeys = specialistToggleKeysForMain(mainSlug);
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [sortOrder, setSortOrder] = useState(initial?.sort_order ?? 0);
   const [specialistPrices, setSpecialistPrices] = useState<SpecialistPrices>(() =>
-    specialistPricesFromInitial(initial),
+    specialistPricesFromInitial(initial, mainSlug),
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,12 +68,13 @@ export function ServiceForm({
       return;
     }
 
-    const priceError = validateSpecialistPrices(specialistPrices);
+    const normalized = normalizeSpecialistPrices(specialistPrices, mainSlug);
+    const priceError = validateSpecialistPrices(normalized, mainSlug);
     if (priceError) {
       setError(priceError);
       return;
     }
-    if (!specialistPricesHasValue(specialistPrices)) {
+    if (!specialistPricesHasValue(normalized, mainSlug)) {
       setError("Укажите хотя бы одну цену больше 0");
       return;
     }
@@ -83,7 +87,10 @@ export function ServiceForm({
         name: name.trim(),
         description: description.trim(),
         sort_order: sortOrder,
-        specialist_prices: specialistPrices,
+        specialist_prices: {
+          ...emptySpecialistPrices(),
+          ...normalized,
+        },
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка сохранения");
@@ -140,14 +147,14 @@ export function ServiceForm({
           <table className="sections-table price-matrix">
             <thead>
               <tr>
-                {SPECIALIST_TOGGLE_KEYS.map((key) => (
+                {toggleKeys.map((key) => (
                   <th key={key}>{SPECIALIST_TOGGLE_LABELS[key]}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               <tr>
-                {SPECIALIST_TOGGLE_KEYS.map((key) => (
+                {toggleKeys.map((key) => (
                   <td key={key}>
                     <input
                       type="text"

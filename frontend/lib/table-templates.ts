@@ -77,11 +77,24 @@ export const VARIANT_SHORT_LABELS: Record<string, string> = {
   evening: "Вечерняя",
 };
 
-export const SPECIALIST_TOGGLE_KEYS = [
+export const DEFAULT_SPECIALIST_TOGGLE_KEYS = [
   "top_stylist",
   "stylist",
   "top_master",
   "master",
+] as const;
+
+export const NAILS_SPECIALIST_TOGGLE_KEYS = [
+  "master",
+  "top_master",
+  "leading_specialist",
+  "instructor_expert",
+] as const;
+
+export const SPECIALIST_TOGGLE_KEYS = [
+  ...DEFAULT_SPECIALIST_TOGGLE_KEYS,
+  "leading_specialist",
+  "instructor_expert",
 ] as const;
 
 export type SpecialistToggleKey = (typeof SPECIALIST_TOGGLE_KEYS)[number];
@@ -91,7 +104,14 @@ export const SPECIALIST_TOGGLE_LABELS: Record<SpecialistToggleKey, string> = {
   stylist: "Стилист",
   top_master: "Топ-мастер",
   master: "Мастер",
+  leading_specialist: "Ведущий специалист",
+  instructor_expert: "Инструктор-эксперт",
 };
+
+export function specialistToggleKeysForMain(mainSlug?: string): readonly SpecialistToggleKey[] {
+  if (mainSlug === "nails") return NAILS_SPECIALIST_TOGGLE_KEYS;
+  return DEFAULT_SPECIALIST_TOGGLE_KEYS;
+}
 
 export const STRIZHKA_RANK_ORDER = [
   "art_director",

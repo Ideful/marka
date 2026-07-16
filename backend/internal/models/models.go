@@ -46,11 +46,15 @@ type LengthPrices struct {
 }
 
 // SpecialistPrices — цена по типу специалиста (для service_single_price_by_specialist).
+// Для ногтевого сервиса используются master / top_master / leading_specialist / instructor_expert.
+// Для остальных направлений — top_stylist / stylist / top_master / master.
 type SpecialistPrices struct {
-	TopStylist int `json:"top_stylist"`
-	Stylist    int `json:"stylist"`
-	TopMaster  int `json:"top_master"`
-	Master     int `json:"master"`
+	TopStylist         int `json:"top_stylist"`
+	Stylist            int `json:"stylist"`
+	TopMaster          int `json:"top_master"`
+	Master             int `json:"master"`
+	LeadingSpecialist  int `json:"leading_specialist"`
+	InstructorExpert   int `json:"instructor_expert"`
 }
 
 // Service — услуга (строка прайса с матрицей цен).

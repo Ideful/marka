@@ -17,9 +17,9 @@ export function SiteLogo({ onClick, className = "" }: Props) {
       <Image
         src="/icons/logo.png"
         alt="Марка"
-        width={120}
-        height={40}
-        className="h-9 w-auto max-w-[7.5rem] rounded-sm bg-sand object-contain object-left md:h-10 md:max-w-[8.5rem]"
+        width={200}
+        height={60}
+        className="h-9 w-auto max-w-[10rem] object-contain object-left md:h-10 md:max-w-[12rem]"
         priority
       />
     </Link>

@@ -13,10 +13,12 @@ export type ApiGenderedPrices = {
 };
 
 export type SpecialistPrices = {
-  top_stylist: number;
-  stylist: number;
-  top_master: number;
-  master: number;
+  top_stylist?: number;
+  stylist?: number;
+  top_master?: number;
+  master?: number;
+  leading_specialist?: number;
+  instructor_expert?: number;
 };
 
 export type Service = {

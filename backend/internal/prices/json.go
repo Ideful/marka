@@ -302,10 +302,12 @@ func parseServicePricesJSON(raw []byte) (*models.GenderedPrices, *models.LengthP
 
 func parseSpecialistPricesMap(raw map[string]json.RawMessage) models.SpecialistPrices {
 	keys := map[string]*int{
-		"top_stylist": nil,
-		"stylist":     nil,
-		"top_master":  nil,
-		"master":      nil,
+		"top_stylist":         nil,
+		"stylist":             nil,
+		"top_master":          nil,
+		"master":              nil,
+		"leading_specialist":  nil,
+		"instructor_expert":   nil,
 	}
 	for key := range keys {
 		v := 0
@@ -321,23 +323,28 @@ func parseSpecialistPricesMap(raw map[string]json.RawMessage) models.SpecialistP
 		}
 	}
 	return models.SpecialistPrices{
-		TopStylist: *keys["top_stylist"],
-		Stylist:    *keys["stylist"],
-		TopMaster:  *keys["top_master"],
-		Master:     *keys["master"],
+		TopStylist:        *keys["top_stylist"],
+		Stylist:           *keys["stylist"],
+		TopMaster:         *keys["top_master"],
+		Master:            *keys["master"],
+		LeadingSpecialist: *keys["leading_specialist"],
+		InstructorExpert:  *keys["instructor_expert"],
 	}
 }
 
 func specialistHasValue(p models.SpecialistPrices) bool {
-	return p.TopStylist > 0 || p.Stylist > 0 || p.TopMaster > 0 || p.Master > 0
+	return p.TopStylist > 0 || p.Stylist > 0 || p.TopMaster > 0 || p.Master > 0 ||
+		p.LeadingSpecialist > 0 || p.InstructorExpert > 0
 }
 
 func NormalizeSpecialistPrices(p models.SpecialistPrices) models.SpecialistPrices {
 	return models.SpecialistPrices{
-		TopStylist: maxInt(p.TopStylist, 0),
-		Stylist:    maxInt(p.Stylist, 0),
-		TopMaster:  maxInt(p.TopMaster, 0),
-		Master:     maxInt(p.Master, 0),
+		TopStylist:        maxInt(p.TopStylist, 0),
+		Stylist:           maxInt(p.Stylist, 0),
+		TopMaster:         maxInt(p.TopMaster, 0),
+		Master:            maxInt(p.Master, 0),
+		LeadingSpecialist: maxInt(p.LeadingSpecialist, 0),
+		InstructorExpert:  maxInt(p.InstructorExpert, 0),
 	}
 }
 
@@ -358,6 +365,12 @@ func ValidateSpecialistPrices(p models.SpecialistPrices) error {
 		return err
 	}
 	if err := check("master", p.Master); err != nil {
+		return err
+	}
+	if err := check("leading_specialist", p.LeadingSpecialist); err != nil {
+		return err
+	}
+	if err := check("instructor_expert", p.InstructorExpert); err != nil {
 		return err
 	}
 	return nil
