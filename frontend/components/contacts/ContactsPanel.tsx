@@ -8,7 +8,7 @@ import {
 } from "@/components/home/home-section-styles";
 
 type Props = {
-  /** Если false — без верхнего заголовка секции (на странице «Контакты») */
+  /** Если false — без видимого заголовка «Контакты» */
   showEyebrow?: boolean;
   tone?: HomeSectionTone;
 };
@@ -23,33 +23,46 @@ export function ContactsPanel({ showEyebrow = true, tone = "light" }: Props) {
       className={`${homeSectionShellClass} ${styles.section}`}
       aria-labelledby="contacts-heading"
     >
-      <div className="mx-auto flex max-w-6xl flex-col gap-10 md:gap-14">
-        <div className="flex flex-col gap-2 text-center md:gap-3">
-          {showEyebrow ? (
-            <p className={`text-xs font-medium uppercase tracking-[0.25em] ${styles.eyebrow}`}>
-              Контакты
-            </p>
-          ) : null}
+      <div className="mx-auto flex max-w-xl flex-col items-center gap-8 text-center md:gap-10">
+        <div className="flex flex-col gap-3 md:gap-4">
           <h2
             id="contacts-heading"
-            className={`text-balance text-2xl font-bold uppercase leading-tight tracking-tight md:text-4xl ${styles.title}`}
+            className={
+              showEyebrow
+                ? `text-2xl font-bold uppercase tracking-tight md:text-4xl ${styles.title}`
+                : "sr-only"
+            }
+          >
+            Контакты
+          </h2>
+          <p
+            className={`text-balance text-base font-medium uppercase leading-snug tracking-wide md:text-xl ${styles.title}`}
           >
             {c.hoursTitle}
             <br />
             {c.hoursDetail}
-          </h2>
+          </p>
         </div>
 
-        <YandexMap embedSrc={c.yandexMapEmbedSrc} title="Салон на карте Балашихи" />
-
-        <div className="flex flex-col items-center gap-2 text-center">
-          <p className="text-base text-ink">{c.addressLine}</p>
+        <div className="flex w-full flex-col items-center gap-4">
           <a
             href={`tel:${c.phoneTel}`}
-            className="text-lg font-semibold text-ink hover:text-accent"
+            className="inline-flex w-full max-w-xs items-center justify-center rounded-full bg-ink px-10 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-ink/90 md:max-w-sm md:text-base"
+          >
+            Позвонить
+          </a>
+          <a
+            href={`tel:${c.phoneTel}`}
+            className="text-base font-medium text-ink underline underline-offset-4 transition hover:text-accent md:text-lg"
           >
             {c.phoneDisplay}
           </a>
+        </div>
+
+        <p className="text-base text-ink md:text-lg">{c.addressLine}</p>
+
+        <div className="w-full max-w-6xl">
+          <YandexMap embedSrc={c.yandexMapEmbedSrc} title="Салон на карте Балашихи" />
         </div>
 
         <MessengerLinks />

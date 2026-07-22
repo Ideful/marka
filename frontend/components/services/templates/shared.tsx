@@ -27,6 +27,7 @@ export function PriceMatrixTable({
   if (rows.length === 0) return null;
 
   const isServiceLength = layout === "service-length";
+
   const firstColClass = isServiceLength
     ? "px-3 py-2.5 text-left text-[10px] font-medium uppercase tracking-wide sm:text-xs"
     : "w-[42%] px-2 py-3 text-left text-xs font-medium uppercase tracking-wide sm:px-3 sm:text-sm";
@@ -41,51 +42,69 @@ export function PriceMatrixTable({
     : "px-1 py-3 text-center text-xs font-medium tabular-nums text-ink sm:px-2 sm:text-sm";
 
   return (
-    <div className="rounded-xl border border-ink/15" data-service-price-table>
-      <table className="w-full table-fixed text-sm">
-        {isServiceLength ? (
-          <colgroup>
-            <col className="w-[32%]" />
-            <col className="w-[23%]" />
-            <col className="w-[23%]" />
-            <col className="w-[22%]" />
-          </colgroup>
-        ) : null}
-        <thead>
-          <tr className="bg-ink-muted text-white">
-            {headers.map((header, index) => (
-              <th
-                key={header}
-                className={index === 0 ? firstColClass : dataColClass}
-              >
-                {isServiceLength && index > 0 ? (
-                  <span className="mx-auto block w-full text-center">{header}</span>
-                ) : (
-                  header
-                )}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((cells, index) => (
-            <tr key={`${cells[0]}-${index}`} className={index % 2 === 0 ? "bg-white" : "bg-sand/40"}>
-              {cells.map((cell, cellIndex) => (
-                <td
-                  key={`${cell}-${cellIndex}`}
-                  className={cellIndex === 0 ? firstCellClass : dataCellClass}
+    <div className="space-y-1.5" data-service-price-table>
+      <div className="overflow-hidden rounded-xl bg-ink-muted text-white">
+        <table className="w-full table-fixed text-sm">
+          {isServiceLength ? (
+            <colgroup>
+              <col className="w-[32%]" />
+              <col className="w-[23%]" />
+              <col className="w-[23%]" />
+              <col className="w-[22%]" />
+            </colgroup>
+          ) : null}
+          <thead>
+            <tr>
+              {headers.map((header, index) => (
+                <th
+                  key={header}
+                  className={index === 0 ? firstColClass : dataColClass}
                 >
-                  {isServiceLength && cellIndex > 0 ? (
-                    <span className="mx-auto block w-full text-center">{cell}</span>
+                  {isServiceLength && index > 0 ? (
+                    <span className="mx-auto block w-full text-center">{header}</span>
                   ) : (
-                    cell
+                    header
                   )}
-                </td>
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+        </table>
+      </div>
+
+      <div className="overflow-hidden rounded-xl border border-ink/15">
+        <table className="w-full table-fixed text-sm">
+          {isServiceLength ? (
+            <colgroup>
+              <col className="w-[32%]" />
+              <col className="w-[23%]" />
+              <col className="w-[23%]" />
+              <col className="w-[22%]" />
+            </colgroup>
+          ) : null}
+          <tbody>
+            {rows.map((cells, index) => (
+              <tr
+                key={`${cells[0]}-${index}`}
+                className={index % 2 === 0 ? "bg-white" : "bg-sand/40"}
+              >
+                {cells.map((cell, cellIndex) => (
+                  <td
+                    key={`${cell}-${cellIndex}`}
+                    className={cellIndex === 0 ? firstCellClass : dataCellClass}
+                  >
+                    {isServiceLength && cellIndex > 0 ? (
+                      <span className="mx-auto block w-full text-center">{cell}</span>
+                    ) : (
+                      cell
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

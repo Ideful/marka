@@ -13,6 +13,16 @@ type Props = {
 
 const FIRST_ROW_COUNT = 2;
 
+function sectionNavRows(main: MainService): Section[][] {
+  const sections = main.services;
+  if (main.slug === "brows-lashes") {
+    return sections.map((item) => [item]);
+  }
+  return [sections.slice(0, FIRST_ROW_COUNT), sections.slice(FIRST_ROW_COUNT)].filter(
+    (row) => row.length > 0,
+  );
+}
+
 function SectionLink({
   item,
   active,
@@ -27,7 +37,7 @@ function SectionLink({
       href={`/services/${mainSlug}/${item.slug}`}
       className={
         active
-          ? "text-lg font-bold italic text-ink underline decoration-2 underline-offset-[5px] sm:text-xl"
+          ? "text-lg font-bold text-ink underline decoration-2 underline-offset-[5px] sm:text-xl"
           : "text-base font-normal text-ink-muted transition hover:text-ink sm:text-lg"
       }
       aria-current={active ? "page" : undefined}
@@ -65,8 +75,7 @@ function SectionRow({
 }
 
 export function SectionShell({ main, section, children }: Props) {
-  const firstRow = main.services.slice(0, FIRST_ROW_COUNT);
-  const secondRow = main.services.slice(FIRST_ROW_COUNT);
+  const navRows = sectionNavRows(main);
 
   return (
     <section className="mx-auto max-w-2xl space-y-8 px-1 sm:px-0">
@@ -88,13 +97,19 @@ export function SectionShell({ main, section, children }: Props) {
         {main.name}
       </h1>
 
-      {main.services.length > 0 ? (
+      {navRows.length > 0 ? (
         <nav
           className="mx-auto flex max-w-xl flex-col gap-2 text-center uppercase tracking-wide"
           aria-label="Разделы"
         >
-          <SectionRow items={firstRow} mainSlug={main.slug} activeSlug={section.slug} />
-          <SectionRow items={secondRow} mainSlug={main.slug} activeSlug={section.slug} />
+          {navRows.map((row) => (
+            <SectionRow
+              key={row.map((item) => item.slug).join("-")}
+              items={row}
+              mainSlug={main.slug}
+              activeSlug={section.slug}
+            />
+          ))}
         </nav>
       ) : null}
 
