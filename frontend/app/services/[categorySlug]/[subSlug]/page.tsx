@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContactsPanel } from "@/components/contacts/ContactsPanel";
 import { SectionRenderer } from "@/components/services/SectionRenderer";
+import { BookingConsultationLink } from "@/components/services/templates/shared";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import {
   ALL_SECTION_PARAMS,
@@ -41,10 +42,15 @@ export default async function ServiceSectionPage({ params }: Props) {
 
   return (
     <>
-      <article className="px-4 py-12 md:px-6 md:py-16">
+      <article className="px-4 pt-12 pb-8 md:px-6 md:pt-16 md:pb-10">
         <SectionRenderer main={main} section={section} />
       </article>
-      <ContactsPanel />
+      <div className="bg-white px-4 md:px-6">
+        <div className="mx-auto max-w-xl">
+          <BookingConsultationLink />
+        </div>
+      </div>
+      <ContactsPanel flushTop />
       <SiteFooter />
     </>
   );

@@ -3,6 +3,7 @@ import { YandexMap } from "@/components/maps/YandexMap";
 import { MessengerLinks } from "@/components/contacts/MessengerLinks";
 import {
   homeSectionShellClass,
+  homeSectionShellFlushTopClass,
   homeSectionToneStyles,
   type HomeSectionTone,
 } from "@/components/home/home-section-styles";
@@ -11,16 +12,23 @@ type Props = {
   /** Если false — без видимого заголовка «Контакты» */
   showEyebrow?: boolean;
   tone?: HomeSectionTone;
+  /** Меньший верхний отступ — когда блок идёт сразу после консультации */
+  flushTop?: boolean;
 };
 
-export function ContactsPanel({ showEyebrow = true, tone = "light" }: Props) {
+export function ContactsPanel({
+  showEyebrow = true,
+  tone = "light",
+  flushTop = false,
+}: Props) {
   const c = salonConfig;
   const styles = homeSectionToneStyles[tone];
+  const shell = flushTop ? homeSectionShellFlushTopClass : homeSectionShellClass;
 
   return (
     <section
       id="contacts"
-      className={`${homeSectionShellClass} ${styles.section}`}
+      className={`${shell} ${styles.section}`}
       aria-labelledby="contacts-heading"
     >
       <div className="mx-auto flex max-w-xl flex-col items-center gap-8 text-center md:gap-10">

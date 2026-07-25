@@ -3,7 +3,6 @@ import type { MainService, Section } from "@/lib/api/services";
 import { serviceDirectionHref } from "@/lib/api/services";
 import { SectionDescription } from "@/components/services/SectionDescription";
 import { SectionPortfolio } from "@/components/services/SectionPortfolio";
-import { BookingConsultationLink } from "@/components/services/templates/shared";
 
 type Props = {
   main: MainService;
@@ -118,8 +117,6 @@ export function SectionShell({ main, section, children }: Props) {
       <SectionDescription text={section.description} />
 
       <SectionPortfolio items={section.portfolio ?? []} />
-
-      <BookingConsultationLink />
     </section>
   );
 }
