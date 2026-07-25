@@ -13,7 +13,7 @@ export function BookingConsultationLink() {
       >
         Бесплатная консультация со специалистом
       </Link>
-      <p className="text-sm leading-snug text-ink md:text-base">
+      <p className="text-[13px] leading-snug text-ink md:text-sm">
         Познакомьтесь с мастером заранее, обсудите пожелания и получите профессиональные
         рекомендации перед процедурой.
       </p>
