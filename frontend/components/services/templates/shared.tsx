@@ -4,14 +4,20 @@ const BOOKING_URL = "https://n717666.yclients.com/company/677152/personal/menu?o
 
 export function BookingConsultationLink() {
   return (
-    <Link
-      href={BOOKING_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block rounded-xl bg-ink-muted px-6 py-4 text-center text-lg font-medium uppercase leading-tight tracking-wide text-white transition hover:bg-ink-muted/90 md:text-xl"
-    >
-      Бесплатная консультация со специалистом
-    </Link>
+    <div className="space-y-5">
+      <Link
+        href={BOOKING_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block rounded-xl bg-ink-muted px-6 py-4 text-center text-lg font-medium uppercase leading-tight tracking-wide text-white transition hover:bg-ink-muted/90 md:text-xl"
+      >
+        Бесплатная консультация со специалистом
+      </Link>
+      <p className="text-base leading-relaxed text-ink md:text-lg">
+        Познакомьтесь с мастером заранее, обсудите пожелания и получите профессиональные
+        рекомендации перед процедурой.
+      </p>
+    </div>
   );
 }
 
