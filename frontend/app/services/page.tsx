@@ -1,14 +1,17 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { fetchMainServices, serviceDirectionHref } from "@/lib/api/services";
+import { resolvePageSeo } from "@/lib/api/seo";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Услуги и цены",
-  description: "Разделы услуг салона: переходите к видам и подтипам с актуальными ценами.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageSeo("/services", {
+    title: "Услуги и цены",
+    description: "Разделы услуг салона: переходите к видам и подтипам с актуальными ценами.",
+  });
+}
 
 export default async function ServicesIndexPage() {
   let categories: Awaited<ReturnType<typeof fetchMainServices>> = [];

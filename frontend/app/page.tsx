@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { HeroSection } from "@/components/home/HeroSection";
 import { YandexRatingBadge } from "@/components/home/YandexRatingBadge";
 import { PhilosophySection } from "@/components/home/PhilosophySection";
@@ -13,7 +14,22 @@ import { DotNav } from "@/components/home/DotNav";
 import { HOME_PAGE_SECTION_TONES } from "@/components/home/home-section-styles";
 import { fetchMarqueeText, fetchHomepagePortfolio, fetchGiftCertificate } from "@/lib/api/site-settings";
 import { fetchSpecialists } from "@/lib/api/specialists";
+import { resolvePageSeo } from "@/lib/api/seo";
 import { salonConfig } from "@/lib/domain/salon-config";
+
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const seo = await resolvePageSeo("/", {
+    title: `${salonConfig.brandName} — ${salonConfig.tagline}`,
+    description:
+      "Парикмахерские услуги, ногтевой сервис, брови и ресницы, косметология, макияж. Балашиха, ул. Парковая, 2.",
+  });
+  return {
+    title: seo.title ? { absolute: seo.title } : undefined,
+    description: seo.description,
+  };
+}
 
 const SECTIONS = [
   { id: "hero", label: "Главная" },

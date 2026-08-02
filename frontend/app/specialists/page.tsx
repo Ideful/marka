@@ -3,14 +3,16 @@ import { ContactsPanel } from "@/components/contacts/ContactsPanel";
 import { SpecialistsList } from "@/components/specialists/SpecialistsList";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { fetchSpecialists } from "@/lib/api/specialists";
+import { resolvePageSeo } from "@/lib/api/seo";
 
-export const metadata: Metadata = {
-  title: "Специалисты",
-  description: "Команда салона МАРКА АРЕНА в Балашихе.",
-};
-
-/** Данные из API при каждом запросе (без ISR-кэша на 60 с). */
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageSeo("/specialists", {
+    title: "Специалисты",
+    description: "Команда салона МАРКА АРЕНА в Балашихе.",
+  });
+}
 
 export default async function SpecialistsPage() {
   let specialists: Awaited<ReturnType<typeof fetchSpecialists>> = [];

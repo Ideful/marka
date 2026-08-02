@@ -2,11 +2,16 @@ import type { Metadata } from "next";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { getApiBaseUrl, resolvePhotoUrl } from "@/lib/api/config";
 import { fetchGiftCertificate } from "@/lib/api/site-settings";
+import { resolvePageSeo } from "@/lib/api/seo";
 
-export const metadata: Metadata = {
-  title: "Сертификаты",
-  description: "Подарочные сертификаты салона МАРКА АРЕНА.",
-};
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageSeo("/certificates", {
+    title: "Сертификаты",
+    description: "Подарочные сертификаты салона МАРКА АРЕНА.",
+  });
+}
 
 const DEFAULT_PAGE_TEXT =
   "Раздел в разработке: условия покупки и номиналы сертификатов добавим позже.";

@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { resolvePageSeo } from "@/lib/api/seo";
 
-export const metadata: Metadata = {
-  title: "Новости",
-  description: "Новости и акции салона МАРКА АРЕНА в Балашихе.",
-};
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageSeo("/news", {
+    title: "Новости",
+    description: "Новости и акции салона МАРКА АРЕНА в Балашихе.",
+  });
+}
 
 export default function NewsPage() {
   return (

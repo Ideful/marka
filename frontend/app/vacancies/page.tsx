@@ -3,11 +3,16 @@ import { MessengerLinks } from "@/components/contacts/MessengerLinks";
 import { VACANCIES } from "@/data/vacancies";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { salonConfig } from "@/lib/domain/salon-config";
+import { resolvePageSeo } from "@/lib/api/seo";
 
-export const metadata: Metadata = {
-  title: "Вакансии",
-  description: "Открытые позиции в салоне Марка Арена, Балашиха.",
-};
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageSeo("/vacancies", {
+    title: "Вакансии",
+    description: "Открытые позиции в салоне Марка Арена, Балашиха.",
+  });
+}
 
 export default function VacanciesPage() {
   return (

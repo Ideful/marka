@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { fetchMainService, firstSectionSlug, MAIN_SERVICE_SLUGS } from "@/lib/api/services";
+import { resolvePageSeo } from "@/lib/api/seo";
 
 type Props = { params: Promise<{ categorySlug: string }> };
 
@@ -14,10 +15,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug } = await params;
   const cat = await fetchMainService(categorySlug);
   if (!cat) return {};
-  return {
+  return resolvePageSeo(`/services/${categorySlug}`, {
     title: cat.name,
     description: `Услуги: ${cat.name}. Салон Марка Арена, Балашиха.`,
-  };
+  });
 }
 
 export default async function ServiceCategoryPage({ params }: Props) {

@@ -4,6 +4,7 @@ import "./AdminLayout.css";
 export type AdminSection =
   | "specialists"
   | "prices"
+  | "seo"
   | "marquee"
   | "homepage-portfolio"
   | "gift-certificate";
@@ -17,6 +18,7 @@ type NavItem = {
 const NAV: NavItem[] = [
   { id: "specialists", label: "Специалисты", enabled: true },
   { id: "prices", label: "Услуги", enabled: true },
+  { id: "seo", label: "SEO", enabled: true },
   { id: "marquee", label: "Бегущая строка", enabled: true },
   { id: "homepage-portfolio", label: "Портфолио", enabled: true },
   { id: "gift-certificate", label: "Сертификат", enabled: true },

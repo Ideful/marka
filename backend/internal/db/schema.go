@@ -101,6 +101,19 @@ func createSchema(ctx context.Context, pool *pgxpool.Pool) error {
 		return fmt.Errorf("alter sections.portfolio: %w", err)
 	}
 
+	_, err = pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS seo_pages (
+			page_key TEXT PRIMARY KEY,
+			path TEXT NOT NULL DEFAULT '',
+			meta_title TEXT NOT NULL DEFAULT '',
+			meta_description TEXT NOT NULL DEFAULT '',
+			updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+		);
+	`)
+	if err != nil {
+		return fmt.Errorf("create seo_pages: %w", err)
+	}
+
 	return nil
 }
 
@@ -148,6 +161,14 @@ func createSchemaFresh(ctx context.Context, pool *pgxpool.Pool) error {
 		CREATE TABLE site_settings (
 			key TEXT PRIMARY KEY,
 			value TEXT NOT NULL DEFAULT ''
+		);
+
+		CREATE TABLE seo_pages (
+			page_key TEXT PRIMARY KEY,
+			path TEXT NOT NULL DEFAULT '',
+			meta_title TEXT NOT NULL DEFAULT '',
+			meta_description TEXT NOT NULL DEFAULT '',
+			updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 		);
 	`)
 	if err != nil {

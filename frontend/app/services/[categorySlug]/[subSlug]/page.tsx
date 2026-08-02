@@ -8,6 +8,7 @@ import {
   fetchMainService,
   fetchSection,
 } from "@/lib/api/services";
+import { resolvePageSeo } from "@/lib/api/seo";
 
 type Props = { params: Promise<{ categorySlug: string; subSlug: string }> };
 
@@ -25,12 +26,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const main = await fetchMainService(categorySlug);
   const section = await fetchSection(categorySlug, subSlug);
   if (!main || !section) return {};
-  return {
+  return resolvePageSeo(`/services/${categorySlug}/${subSlug}`, {
     title: `${section.name} — ${main.name}`,
     description:
       section.description ||
       `Прайс: ${section.name}. ${main.name}, салон Марка Арена.`,
-  };
+  });
 }
 
 export default async function ServiceSectionPage({ params }: Props) {
