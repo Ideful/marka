@@ -14,6 +14,7 @@ import (
 	"marka-backend/internal/sitesettings"
 	"marka-backend/internal/specialists"
 	"marka-backend/internal/storage"
+	"marka-backend/internal/vacancyapplications"
 )
 
 func init() {
@@ -59,6 +60,7 @@ func main() {
 	catalog.New(pool).RegisterRoutes(mux)
 	prices.New(pool).RegisterRoutes(mux)
 	sitesettings.New(pool).RegisterRoutes(mux)
+	vacancyapplications.New().RegisterRoutes(mux)
 
 	addr := "0.0.0.0:" + port
 	handler := httputil.WithRequestLogging(httputil.WithCORS(mux))

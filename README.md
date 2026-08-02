@@ -110,6 +110,10 @@ make dev-frontend      # http://localhost:3000
 
 Подробнее: [`backend/README.md`](backend/README.md).
 
+### Отклики на вакансии (email)
+
+Форма на главной шлёт `POST /vacancy-applications` (через Next.js `/api/vacancy-applications`). Письма уходят на `marka.arenva.love@gmail.com` — адрес и SMTP заданы в `backend/internal/vacancyapplications/mail.go` (константа `vacancySMTPAppPassword` — пароль приложения Gmail).
+
 ## Переменные окружения
 
 Шаблон для локальной разработки: [`.env.example`](.env.example). На сервере с Docker большинство значений заданы в `docker-compose.yml`, отдельный `.env` не обязателен.
