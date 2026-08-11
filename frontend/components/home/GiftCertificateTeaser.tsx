@@ -8,8 +8,7 @@ type Props = {
   settings: GiftCertificateSettings;
 };
 
-const DEFAULT_TEASER_TEXT =
-  "Подарите близким заботу о себе — визит в салон, уход за волосами или выбранную услугу.";
+const CERTIFICATES_BUY_URL = "https://o16253.yclients.com/certificates";
 
 function PhotoPlaceholder() {
   return (
@@ -28,7 +27,6 @@ function PhotoPlaceholder() {
 export function GiftCertificateTeaser({ settings }: Props) {
   const apiBase = getApiBaseUrl();
   const photoSrc = resolvePhotoUrl(settings.photo_url, apiBase);
-  const teaserText = settings.teaser_text || DEFAULT_TEASER_TEXT;
 
   return (
     <HomeSection
@@ -36,39 +34,57 @@ export function GiftCertificateTeaser({ settings }: Props) {
       headingId="certificates-heading"
       eyebrow="Подарки"
       title={
-        <>
-          Подарочный
-          <br />
-          сертификат
-        </>
+        <span className="font-normal normal-case">
+          Сертификаты
+        </span>
       }
       tone={HOME_PAGE_SECTION_TONES.certificates}
       narrow
     >
       <div className="flex flex-col gap-6">
-        <p className="whitespace-pre-wrap text-base leading-relaxed text-ink-muted md:text-lg">
-          {teaserText}
-        </p>
-
-        <Link
-          href="/certificates"
-          className="inline-flex w-fit text-sm font-medium text-ink underline-offset-4 hover:text-accent hover:underline"
-        >
-          Подробнее о сертификатах →
-        </Link>
-
         {photoSrc ? (
-          <div className={homeMediaCardClass}>
+          <a href={CERTIFICATES_BUY_URL} target="_blank" rel="noopener noreferrer" className={homeMediaCardClass}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={photoSrc}
               alt="Подарочный сертификат"
               className="aspect-[4/3] w-full object-cover"
             />
-          </div>
+          </a>
         ) : (
           <PhotoPlaceholder />
         )}
+        <h2 className="text-2xl font-normal leading-tight tracking-tight text-ink md:text-3xl">
+          Подарочные сертификаты
+        </h2>
+        <p className="whitespace-pre-wrap text-base leading-relaxed text-ink-muted md:text-lg">
+          Ищете подарок, который точно понравится? Подарочный сертификат в наш салон - это
+          возможность подарить заботу, красоту и время для себя.
+        </p>
+        <p className="whitespace-pre-wrap text-base leading-relaxed text-ink-muted md:text-lg">
+          Сертификат можно использовать на любые услуги салона: парикмахерские услуги,
+          окрашивание, уходы, маникюр, педикюр, косметологию и другие процедуры.
+        </p>
+
+        <h2 className="text-2xl font-normal leading-tight tracking-tight text-ink md:text-3xl">
+          Доступные номиналы
+        </h2>
+        <ul className="space-y-1 text-base leading-relaxed text-ink-muted md:text-lg">
+          <li>🎁 1 500 ₽</li>
+          <li>🎁 3 000 ₽</li>
+          <li>🎁 5 000 ₽</li>
+          <li>🎁 10 000 ₽</li>
+          <li>🎁 15 000 ₽</li>
+        </ul>
+
+        <Link
+          href={CERTIFICATES_BUY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex w-fit text-sm font-medium text-ink underline-offset-4 hover:text-accent hover:underline"
+        >
+          Приобрести Сертификат →
+        </Link>
       </div>
     </HomeSection>
   );
